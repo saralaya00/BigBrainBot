@@ -3,6 +3,7 @@ import markdown
 import random
 import requests
 from bs4 import BeautifulSoup
+from deprecated import deprecated
 
 def get_codechef_daily(source):
   url = source['problem_source']
@@ -23,7 +24,7 @@ def get_codechef_daily(source):
 
 def get_codeforces_random(source):
   current_index = ["A", "B"] # codeforces index to identify difficulty of the problem, lower is easier
-  with open('codeforces_problemset.json') as fp:
+  with open('resources/codeforces_problemset.json') as fp:
     problemset = json.load(fp)
 
   filtered_problems = list(filter(lambda obj: obj['index'] in current_index, problemset['result']['problems']))
@@ -40,12 +41,9 @@ def get_codeforces_random(source):
     "msg" : source["msg_template"].format(problem_title = problem_title, link = link, tags = problem['tags'])
   }
 
-def get_leetcode_random(source):
+@deprecated(reason="now a legacy impl")
+def export_leetcodeMD_toJSON(source):
   url = source['problem_source']
-
-  # Problem list markdown Schema: https://github.com/fishercoder1534/Leetcode/blob/master/README.md
-  # | #    |      Title     |   Solutions   | Video  | Difficulty  | Tag
-  # | 1910 |[Remove All Occurrences of a Substring](https://leetcode.com/problems/remove-all-occurrences-of-a-substring/)|[Solution](../master/src/main/java/com/fishercoder/solutions/_1904.java) |[:tv:](https://youtube...)|Medium|String|
   rawMD = requests.get(url).text.split('\n')
 
   # A boolean that identifies that a '## Algorithms' header was identified so we can start to parse the required markdown table
@@ -61,29 +59,65 @@ def get_leetcode_random(source):
       if (
         len(line) == 0
         or '## Database' in line # '## Database' section markdown table which can also be parsed
-        or 'Title' and 'Solution' in line
+        or '#' in line and 'Video' in line and 'Tag' in line
         or '|---' in line
       ):
         # ignore headers and empty lines  
+        # print(line)
         continue
       
-      # On_line.split('|'): ['', ' 1910 ', '[Remove All Occurrences of a Substring](https://leetcode.com/problems/remove-all-occurrences-of-a-substring/)', '[Solution](../master/src/main/java/com/fishercoder/solutions/_1904.java) ', '[:tv:](https://youtube...)', 'Medium', 'String', '']
       problemset.append(line.split('|'))
 
-  problem = random.choice(problemset)
-  plain = markdown.markdown(problem[2].strip())
-  soup = BeautifulSoup(plain, "html.parser")
-  anchor = soup.find('a')
+  problemListJSON = []
+  for problem in problemset:
+    plain = markdown.markdown(problem[2].strip())
+    soup = BeautifulSoup(plain, "html.parser")
+    anchor = soup.find('a')
 
-  problem_num = problem[1].strip()
-  problem_title = anchor.contents[0]
-  link = anchor.get('href')
-  difficulty = problem[5].strip()
+    problem_num = problem[1].strip()
+    if (anchor is None or not anchor.contents[0]):
+      # print(problem)
+      continue
+    
+    problem_title = anchor.contents[0]
+    link = anchor.get('href')
+    difficulty = problem[5].strip()
+    tags = ''
+    if len(problem) -1 > 5:
+      tags = problem[6].strip()
+      # print(tags)
+    
+    problemListJSON.append(
+      {
+      "id" : problem_num, 
+      "title" : problem_title, 
+      "link" : link, 
+      "difficulty" : difficulty,
+      "tags" : tags
+      }
+    )
+  
+  problemListJSON.sort(key=lambda k: int(k['id']))
+  jsonStr = json.dumps(problemListJSON)
+  
+  # Display total number of problems
+  # previousCount = 1465
+  # print (f'\nTotal Number of Leetcode problems \nPrevious count: {previousCount} \nCurrent count: {len(problemListJSON)}')
 
-  msg = source["msg_template"].format(problem_num = problem_num, problem_title = problem_title, difficulty = difficulty, link = link)
+  with open('resources/legacy_leetcode.json', 'w') as file: 
+    file.writelines(jsonStr)
+    file.close()
+
+@deprecated(reason="now a legacy impl")
+def get_leetcode_random(source):
+  # export_leetcodeMD_toJSON(source)
+  with open('resources/legacy_leetcode.json') as fp:
+    problemListJSON = json.load(fp)
+  problem = random.choice(problemListJSON)
+  msg = source["msg_template"].format(id = problem['id'], title = problem['title'], difficulty = problem['difficulty'], link = problem['link'])
   return {
-    "problem_title" : problem_title,
-    "link" : link,
+    "problem_title" : problem['title'],
+    "link" : problem['link'],
     "msg" : msg
   }
 
@@ -98,6 +132,9 @@ def scrape_daily_problem(source):
   elif source_name == "leetcode":
     return get_leetcode_random(source)
 
+  elif source_name == "legacy-leetcode":
+    return get_leetcode_random(source)
+
   else:
     return {
       "problem_title" : "Bad Implementation",
@@ -106,12 +143,12 @@ def scrape_daily_problem(source):
     }
 
 # # For Testing 
-# out = scrape_daily_problem(
-#   {
-#     "name" : "codeforces",
-#     "problem_source" : "https://codeforces.com/api/problemset.problems", # API Source where we can get the problemset json (manually used for now)
-#     "problem_dest" : "https://codeforces.com/problemset/problem",
-#     "msg_template" : "**Codeforces - Random daily**\n{problem_title}\n||{tags}||\n{link}"
-#   }
-# )
+# source = {
+#   "name" : "legacy-leetcode",
+#   "problem_source" : "https://raw.githubusercontent.com/fishercoder1534/Leetcode/master/README.md", # md source, backup in https://github.com/saralaya00/Leetcode
+#   "problem_dest" : "https://leetcode.com/problems/", # Not required for now
+#   "msg_template" : "**Leetcode - Random daily**\n{id} - {title} ||**{difficulty}**||\n{link}"
+# }
+# # export_leetcodeMD_toJSON(source)
+# out = scrape_daily_problem(source)
 # print(out['msg'])

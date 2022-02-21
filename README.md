@@ -1,6 +1,8 @@
 # PeruvianCheeseOil
 A discord bot to drop daily coding problems on a specific channel.  
-Uses Codechef daily, and codeforces randoms as sources.  
+Uses Codechef daily, leetcode and codeforces randoms as sources.  
+Simple points system per user, to keep track of progression.  
+![BigBrainBot](resources/bot-image.png "BigBrainBot")
 
 ### References
 [tutorial](https://www.freecodecamp.org/news/create-a-discord-bot-with-python/)  
@@ -10,3 +12,7 @@ Uses Codechef daily, and codeforces randoms as sources.
 
 [codeforces api/problemset.problems](https://codeforces.com/apiHelp/methods#problemset.problems)  
 [codeforces problem schema](https://codeforces.com/apiHelp/objects#Problem)  
+
+
+[leetode (legacy implementation) problems list fishercoder1534/Leetcode](https://github.com/fishercoder1534/Leetcode)  
+[leetcode metadata from Ruin9999/leetcode-api](https://github.com/Ruin9999/leetcode-api)
