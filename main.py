@@ -10,6 +10,7 @@ from datetime import date
 
 class DiscordClient(discord.Client):
   #big-brain-coding channel id
+  # CHANNEL_ID = 938668885316628502 # TEST CHANNEL
   CHANNEL_ID = 1003624397749354506
   sources_to_use = ["legacy-leetcode"]
   sources = [
@@ -148,13 +149,8 @@ Use **bot :deletepoints** command to delete your Bigbrain points.
       await message.channel.send("Use *bot :help* to get bot info.")
       return
 
-def cleanup_db():
-  # del db.keys()
-  for source in DiscordClient.sources:
-    source_name = source['name']
-    db[source_name] = "False"
 
-cleanup_db()
+# helper.print_db()
 keep_alive()
 client = DiscordClient()
 client.run(os.getenv('TOKEN'))

@@ -4,6 +4,16 @@ import random
 import requests
 from bs4 import BeautifulSoup
 from deprecated import deprecated
+from replit import db
+
+def cleanup_db():
+  print_db()
+  for key in db.keys():
+    del db[key]
+
+def print_db():
+  print("List of replit db Keys", db.keys())
+  
 
 def get_codechef_daily(source):
   url = source['problem_source']
@@ -152,3 +162,6 @@ def scrape_daily_problem(source):
 # # export_leetcodeMD_toJSON(source)
 # out = scrape_daily_problem(source)
 # print(out['msg'])
+
+
+
