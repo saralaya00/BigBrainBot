@@ -19,7 +19,7 @@ class DiscordClient(discord.Client):
       "name" : "leetcode",
       "problem_source" : "https://leetcode-api-1d31.herokuapp.com", # Not required for now, since using offline source
       "problem_dest" : "https://leetcode.com/problems/",
-      "msg_template" : "**Leetcode - Random daily (Experimental)**\n{id} - {title}\n||**{tags}**||\n{link}"
+      "msg_template" : "**Leetcode - Random daily (Experimental)**\n{id} - {title}\n||{tags}||\n{link}"
     },
     {
       "name" : "legacy-leetcode",
