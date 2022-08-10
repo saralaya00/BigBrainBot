@@ -6,14 +6,14 @@ from bs4 import BeautifulSoup
 from deprecated import deprecated
 from replit import db
 
-def cleanup_db():
-  print_db()
-  for key in db.keys():
-    del db[key]
+class Util:
+  def cleanup_db():
+    Util.print_db()
+    for key in db.keys():
+      del db[key]
 
-def print_db():
-  print("List of replit db Keys", db.keys())
-  
+  def print_db():
+    print("List of replit db Keys", db.keys())
 
 def get_codechef_daily(source):
   url = source['problem_source']
@@ -119,12 +119,39 @@ def export_leetcodeMD_toJSON(source):
     file.close()
 
 @deprecated(reason="now a legacy impl")
-def get_leetcode_random(source):
+def get_legacy_leetcode(source):
   # export_leetcodeMD_toJSON(source)
   with open('resources/legacy_leetcode.json') as fp:
     problemListJSON = json.load(fp)
   problem = random.choice(problemListJSON)
   msg = source["msg_template"].format(id = problem['id'], title = problem['title'], difficulty = problem['difficulty'], link = problem['link'])
+  return {
+    "problem_title" : problem['title'],
+    "link" : problem['link'],
+    "msg" : msg
+  }
+
+def get_leetcode_random(source):
+  with open('resources/leetcode_problems.json') as fp:
+    problemListJSON = json.load(fp)
+  
+  # Filter
+  problemListJSON = problemListJSON['data']['questions']
+  problemListJSON = list(filter(lambda obj: obj['paidOnly'] != True, problemListJSON))
+  # problemListJSON.sort(key=lambda k: int(k['frontendQuestionId'])) # Sort based on id
+
+  problem = random.choice(problemListJSON)
+  tags = list(tag['name'] for tag in problem['topicTags'])
+  tags.insert(0, problem['difficulty'])
+
+  problem = {
+    "id" : problem['frontendQuestionId'],
+    "title" : problem['title'],
+    "tags" : tags,
+    "link" : source['problem_dest'] + problem['titleSlug']
+  }
+
+  msg = source["msg_template"].format(id = problem['id'], title = problem['title'], tags = problem['tags'], link = problem['link'])
   return {
     "problem_title" : problem['title'],
     "link" : problem['link'],
@@ -143,7 +170,7 @@ def scrape_daily_problem(source):
     return get_leetcode_random(source)
 
   elif source_name == "legacy-leetcode":
-    return get_leetcode_random(source)
+    return get_legacy_leetcode(source)
 
   else:
     return {
@@ -154,14 +181,14 @@ def scrape_daily_problem(source):
 
 # # For Testing 
 # source = {
-#   "name" : "legacy-leetcode",
-#   "problem_source" : "https://raw.githubusercontent.com/fishercoder1534/Leetcode/master/README.md", # md source, backup in https://github.com/saralaya00/Leetcode
-#   "problem_dest" : "https://leetcode.com/problems/", # Not required for now
-#   "msg_template" : "**Leetcode - Random daily**\n{id} - {title} ||**{difficulty}**||\n{link}"
+#   "name" : "leetcode",
+#   "problem_source" : "https://leetcode-api-1d31.herokuapp.com", # Not required for now, since using offline source
+#   "problem_dest" : "https://leetcode.com/problems/",
+#   "msg_template" : "**Leetcode - Random daily (Experimental)**\n{id} - {title}\n||**{tags}**||\n{link}"
 # }
-# # export_leetcodeMD_toJSON(source)
+
 # out = scrape_daily_problem(source)
 # print(out['msg'])
 
-
-
+# Get JSON output for legacy implementation
+# # export_leetcodeMD_toJSON(source)

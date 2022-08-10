@@ -3,6 +3,7 @@ import helper
 import os
 import random
 
+from helper import Util
 from replit import db
 from discord.ext import tasks
 from keep_alive import keep_alive
@@ -16,9 +17,9 @@ class DiscordClient(discord.Client):
   sources = [
     {
       "name" : "leetcode",
-      "problem_source" : "https://raw.githubusercontent.com/fishercoder1534/Leetcode/master/README.md", # md source, backup in https://github.com/saralaya00/Leetcode
-      "problem_dest" : "https://leetcode.com/problems/", # Not required for now
-      "msg_template" : "**Leetcode - Random daily**\n{id} - {title} ||**{difficulty}**||\n{link}"
+      "problem_source" : "https://leetcode-api-1d31.herokuapp.com", # Not required for now, since using offline source
+      "problem_dest" : "https://leetcode.com/problems/",
+      "msg_template" : "**Leetcode - Random daily (Experimental)**\n{id} - {title}\n||**{tags}**||\n{link}"
     },
     {
       "name" : "legacy-leetcode",
@@ -150,7 +151,7 @@ Use **bot :deletepoints** command to delete your Bigbrain points.
       return
 
 
-# helper.print_db()
+Util.print_db()
 keep_alive()
 client = DiscordClient()
 client.run(os.getenv('TOKEN'))
