@@ -13,7 +13,7 @@ class DiscordClient(discord.Client):
   #big-brain-coding channel id
   # CHANNEL_ID = 938668885316628502 # TEST CHANNEL
   CHANNEL_ID = 1003624397749354506
-  sources_to_use = ["legacy-leetcode"]
+  sources_to_use = ["legacy-leetcode", "leetcode"]
   sources = [
     {
       "name" : "leetcode",
@@ -130,7 +130,7 @@ Use **bot :deletepoints** command to delete your Bigbrain points.
       if ":get" in message_content:
         source_name_list = ["leetcode", "legacy-leetcode", "codechef", "codeforces"]
         for source_name in source_name_list:
-          if source_name in message_content:
+          if "bot :get " == message_content.replace(source_name, ''):
             index = source_name_list.index(source_name)
             source = self.sources[index]
             problem = helper.scrape_daily_problem(source)
