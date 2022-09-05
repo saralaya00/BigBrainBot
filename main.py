@@ -13,7 +13,7 @@ class DiscordClient(discord.Client):
   #big-brain-coding channel id
   # CHANNEL_ID = 938668885316628502 # TEST CHANNEL
   CHANNEL_ID = 1003624397749354506
-  sources_to_use = ["legacy-leetcode", "leetcode"]
+  sources_to_use = ["leetcode"]
   sources = [
     {
       "name" : "leetcode",
@@ -151,7 +151,7 @@ Use **bot :deletepoints** command to delete your Bigbrain points.
       return
 
 
-Util.print_db()
+# Util.print_db()
 keep_alive()
 client = DiscordClient()
 client.run(os.getenv('TOKEN'))
