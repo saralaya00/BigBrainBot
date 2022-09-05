@@ -1,3 +1,4 @@
+from RedditUtil import RedditUtil
 import discord
 import helper
 import os
@@ -59,7 +60,7 @@ Use **bot :deletepoints** command to delete your Bigbrain points.
 
   async def on_ready(self):
     print(f'{self.user} has logged in.')
-
+    
   @tasks.loop(minutes=60 * 3)
   async def write_daily_question(self):
     todate = f"{date.today()}"
@@ -97,19 +98,16 @@ Use **bot :deletepoints** command to delete your Bigbrain points.
     author_id = f"{message.author.id}"
     message_content = message.content.lower()
 
-    if "pls mem" in message_content.replace("pls mem", ''):
-      embed = discord.Embed(title='Go to YouTube',
-                       url='https://www.youtube.com/',
-                       description='New video guys click on the title')
-      await message.channel.send(embed)
-      return
-      # print(helper.get_reddit(Util.MEMES_STR))
-    if "pls comix" in message_content.replace("pls comix", ''):
-      # print(helper.get_reddit(Util.COMICS_STR))
-      return
-    if "pls nsfw" in message_content.replace("pls nsfw", ''):
-      await message.channel.send("Feelin horny puppy?")
-      return
+    if "pls" in message_content:
+      if "mem" == message_content.replace("pls ", ''):
+        post = RedditUtil.get_reddit_post(RedditUtil.MEMES_STR)
+        await message.channel.send(post["url"])
+        return
+
+      if "comix" == message_content.replace("pls ", ''):
+        post = RedditUtil.get_reddit_post(RedditUtil.COMICS_STR)
+        await message.channel.send(post["url"])
+        return
 
     if "bot" in message_content:
       if ":help" in message_content:
