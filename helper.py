@@ -6,7 +6,6 @@ from bs4 import BeautifulSoup
 from deprecated import deprecated
 from replit import db
 
-
 class Util:
     def cleanup_db():
         Util.print_db()
@@ -15,7 +14,6 @@ class Util:
 
     def print_db():
         print("List of replit db Keys", db.keys())
-
 
 def get_codechef_daily(source):
     url = source['problem_source']
