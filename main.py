@@ -3,6 +3,7 @@ import helper
 import os
 import random
 
+from helper import Util
 from replit import db
 from discord.ext import tasks
 from keep_alive import keep_alive
@@ -12,13 +13,13 @@ class DiscordClient(discord.Client):
   #big-brain-coding channel id
   # CHANNEL_ID = 938668885316628502 # TEST CHANNEL
   CHANNEL_ID = 1003624397749354506
-  sources_to_use = ["legacy-leetcode"]
+  sources_to_use = ["leetcode"]
   sources = [
     {
       "name" : "leetcode",
-      "problem_source" : "https://raw.githubusercontent.com/fishercoder1534/Leetcode/master/README.md", # md source, backup in https://github.com/saralaya00/Leetcode
-      "problem_dest" : "https://leetcode.com/problems/", # Not required for now
-      "msg_template" : "**Leetcode - Random daily**\n{id} - {title} ||**{difficulty}**||\n{link}"
+      "problem_source" : "https://leetcode-api-1d31.herokuapp.com", # Not required for now, since using offline source
+      "problem_dest" : "https://leetcode.com/problems/",
+      "msg_template" : "**Leetcode - Random daily (Experimental)**\n{id} - {title}\n||{tags}||\n{link}"
     },
     {
       "name" : "legacy-leetcode",
@@ -129,7 +130,7 @@ Use **bot :deletepoints** command to delete your Bigbrain points.
       if ":get" in message_content:
         source_name_list = ["leetcode", "legacy-leetcode", "codechef", "codeforces"]
         for source_name in source_name_list:
-          if source_name in message_content:
+          if "bot :get " == message_content.replace(source_name, ''):
             index = source_name_list.index(source_name)
             source = self.sources[index]
             problem = helper.scrape_daily_problem(source)
@@ -150,7 +151,7 @@ Use **bot :deletepoints** command to delete your Bigbrain points.
       return
 
 
-# helper.print_db()
+# Util.print_db()
 keep_alive()
 client = DiscordClient()
 client.run(os.getenv('TOKEN'))

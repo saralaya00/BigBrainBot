@@ -2,7 +2,7 @@
     "message": "5000 questions found.",
     "data": {
         "total": 2370,
-        "questiions": [
+        "questions": [
             {
                 "acRate": 48.92763433683687,
                 "difficulty": "Easy",
