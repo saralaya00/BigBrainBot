@@ -14,6 +14,8 @@ class DiscordClient(discord.Client):
   #big-brain-coding channel id
   # CHANNEL_ID = 938668885316628502 # TEST CHANNEL
   CHANNEL_ID = 1003624397749354506
+  MEMES_CHANNEL = 765949842689097729
+  
   sources_to_use = ["leetcode"]
   sources = [
     {
@@ -56,6 +58,7 @@ Use **bot :deletepoints** command to delete your Bigbrain points.
     super().__init__(*args, **kwargs)
 
     # start the task to run in the background
+    self.redditUtil = RedditUtil()
     self.write_daily_question.start()
 
   async def on_ready(self):
@@ -99,20 +102,23 @@ Use **bot :deletepoints** command to delete your Bigbrain points.
     message_content = message.content.lower()
 
     if "pls" in message_content:
+      # if message.channel.id != self.MEMES_CHANNEL:
+      #   return
+        
       if "mem" == message_content.replace("pls ", ''):
-        post = RedditUtil.get_reddit_post(RedditUtil.MEMES_STR)
+        post = self.redditUtil.get_reddit_post(RedditUtil.MEMES_STR)
         await message.channel.send(post["url"])
         return
 
       if "comix" == message_content.replace("pls ", ''):
-        post = RedditUtil.get_reddit_post(RedditUtil.COMICS_STR)
+        post = self.redditUtil.get_reddit_post(RedditUtil.COMICS_STR)
         await message.channel.send(post["url"])
         return
 
     if "bot" in message_content:
       if ":help" in message_content:
         await message.channel.send(self.HELP_MSG_STRING)
-        return 
+        return
 
       if ":mypoints" in message_content:
         if author_id in db.keys():

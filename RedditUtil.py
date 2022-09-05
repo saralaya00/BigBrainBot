@@ -46,8 +46,8 @@ class RedditUtil:
         for p in posts_raw:
             if( p not in self.ALREADY_POSTED and
                 p[RedditUtil.DATA_JSON_KEY]["over_18"] != True or
-                p[RedditUtil.DATA_JSON_KEY]["is_video"] != True or
-                p[RedditUtil.DATA_JSON_KEY][RedditUtil.IMAGES_DOMAIN_JSON_KEY] not in RedditUtil.IMAGES_DOMAIN_JSON_VALUE):
+                p[RedditUtil.DATA_JSON_KEY]["is_video"] != True and
+                p[RedditUtil.DATA_JSON_KEY][RedditUtil.IMAGES_DOMAIN_JSON_KEY] in RedditUtil.IMAGES_DOMAIN_JSON_VALUE):
                     posts.append(p)
 
         # print(json.dumps(posts))
@@ -57,6 +57,6 @@ class RedditUtil:
         return post
 
 ## Reddit Tests
-redditUtil = RedditUtil()
-post = redditUtil.get_reddit_post(RedditUtil.MEMES_STR)
-print(post["url"])
+# redditUtil = RedditUtil()
+# post = redditUtil.get_reddit_post(RedditUtil.MEMES_STR)
+# print(post["url"])
