@@ -27,14 +27,10 @@ def get_codechef_daily(source):
     link = url + anchor.get('href')
 
     return {
-        "problem_title":
-        problem_title,
-        "link":
-        link,
-        "msg":
-        source["msg_template"].format(problem_title=problem_title, link=link)
+        "problem_title":problem_title,
+        "link":link,
+        "msg":source["msg_template"].format(problem_title=problem_title, link=link)
     }
-
 
 def get_codeforces_random(source):
     current_index = [
@@ -54,12 +50,9 @@ def get_codeforces_random(source):
     link = f"{source['problem_dest']}/{problem['contestId']}/{problem['index']}"
 
     return {
-        "problem_title":
-        problem_title,
-        "link":
-        link,
-        "msg":
-        source["msg_template"].format(problem_title=problem_title,
+        "problem_title":problem_title,
+        "link":link,
+        "msg":source["msg_template"].format(problem_title=problem_title,
                                       link=link,
                                       tags=problem['tags'])
     }
