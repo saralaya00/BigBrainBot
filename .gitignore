@@ -2,8 +2,6 @@
 __pycache__/
 *.py[cod]
 *$py.class
-pyproject.toml
-poetry.lock
 
 # C extensions
 *.so
