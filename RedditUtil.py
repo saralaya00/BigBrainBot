@@ -1,4 +1,3 @@
-import asyncio
 import collections
 import random
 import requests
@@ -71,8 +70,10 @@ class RedditUtil:
         if post_url in self.POSTS[subreddit]:
           self.POSTS[subreddit].remove(post_url)
         self.ALREADY_POSTED.append(post_url)
-        if len(self.ALREADY_POSTED) > self._get_api_request_meta()["limit"] * 3:
-          while self.ALREADY_POSTED and len(self.ALREADY_POSTED) >= self._get_api_request_meta()["limit"]:
+
+        limit = self._get_api_request_meta()["limit"]
+        if len(self.ALREADY_POSTED) > limit * 3:
+          while self.ALREADY_POSTED and len(self.ALREADY_POSTED) >= limit:
               self.ALREADY_POSTED.popleft()
 
     def _is_Posted(self, post_url) -> bool:
