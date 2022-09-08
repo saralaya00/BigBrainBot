@@ -9,7 +9,6 @@ python = "^3.8"
 replit = "^3.2.4"
 bs4 = "^0.0.1"
 discord = "^1.7.3"
-Flask = "^2.0.3"
 Markdown = "^3.3.6"
 Deprecated = "^1.2.13"
 
