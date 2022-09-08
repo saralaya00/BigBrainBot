@@ -1,3 +1,4 @@
+from RedditUtil import RedditUtil
 import discord
 import helper
 import os
@@ -13,6 +14,7 @@ class DiscordClient(discord.Client):
   #big-brain-coding channel id
   # CHANNEL_ID = 938668885316628502 # TEST CHANNEL
   CHANNEL_ID = 1003624397749354506
+  
   sources_to_use = ["leetcode"]
   sources = [
     {
@@ -49,17 +51,22 @@ Use **bot :get** command with any source (leetcode, legacy-leetcode, codechef, c
 Use **bot :solution** followed by a github.com link to get a point.
 Use **bot :mypoints** command to get your Bigbrain points.
 Use **bot :deletepoints** command to delete your Bigbrain points.
+
+Use **pls meme** For a r/meme
+Use **pls comic** For a r/comics
+
 **bot :help** displays this message."""
 
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
 
     # start the task to run in the background
+    self.redditUtil = RedditUtil()
     self.write_daily_question.start()
 
   async def on_ready(self):
     print(f'{self.user} has logged in.')
-
+    
   @tasks.loop(minutes=60 * 3)
   async def write_daily_question(self):
     todate = f"{date.today()}"
@@ -97,10 +104,21 @@ Use **bot :deletepoints** command to delete your Bigbrain points.
     author_id = f"{message.author.id}"
     message_content = message.content.lower()
 
+    if "pls" in message_content:
+      if "meme" == message_content.replace("pls ", ''):
+        post_url = self.redditUtil.get_reddit_post(RedditUtil.MEMES_STR)
+        await message.channel.send(post_url)
+        return
+
+      if "comic" == message_content.replace("pls ", ''):
+        post_url = self.redditUtil.get_reddit_post(RedditUtil.COMICS_STR)
+        await message.channel.send(post_url)
+        return
+
     if "bot" in message_content:
       if ":help" in message_content:
         await message.channel.send(self.HELP_MSG_STRING)
-        return 
+        return
 
       if ":mypoints" in message_content:
         if author_id in db.keys():
@@ -146,10 +164,6 @@ Use **bot :deletepoints** command to delete your Bigbrain points.
       if any(element in message_content for element in ["bad"]):
         await message.channel.send(":(")
         return
-
-      await message.channel.send("Use *bot :help* to get bot info.")
-      return
-
 
 # Util.print_db()
 keep_alive()
