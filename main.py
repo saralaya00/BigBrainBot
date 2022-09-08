@@ -1,171 +1,116 @@
-from RedditUtil import RedditUtil
 import discord
-import helper
 import os
-import random
 
-from helper import Util
 from replit import db
 from discord.ext import tasks
-from keep_alive import keep_alive
 from datetime import date
+from Helper import Helper
+from RedditUtil import RedditUtil
+
 
 class DiscordClient(discord.Client):
-  #big-brain-coding channel id
-  # CHANNEL_ID = 938668885316628502 # TEST CHANNEL
-  CHANNEL_ID = 1003624397749354506
-  
-  sources_to_use = ["leetcode"]
-  sources = [
-    {
-      "name" : "leetcode",
-      "problem_source" : "https://leetcode-api-1d31.herokuapp.com", # Not required for now, since using offline source
-      "problem_dest" : "https://leetcode.com/problems/",
-      "msg_template" : "**Leetcode - Random daily (Experimental)**\n{id} - {title}\n||{tags}||\n{link}"
-    },
-    {
-      "name" : "legacy-leetcode",
-      "problem_source" : "https://raw.githubusercontent.com/fishercoder1534/Leetcode/master/README.md", # md source, backup in https://github.com/saralaya00/Leetcode
-      "problem_dest" : "https://leetcode.com/problems/", # Not required for now
-      "msg_template" : "**Leetcode - Random daily**\n{id} - {title} ||**{difficulty}**||\n{link}"
-    },
-    {
-      "name" : "codechef",
-      "problem_source" : "https://www.codechef.com",
-      "problem_dest" : "https://www.codechef.com",
-      "msg_template" : "**Codechef - Problem of the Day**\n{problem_title}\n{link}"
-    },
-    {
-      "name" : "codeforces",
-      "problem_source" : "https://codeforces.com/api/problemset.problems", # API Source where we can get the problemset json (manually used for now)
-      "problem_dest" : "https://codeforces.com/problemset/problem",
-      "msg_template" : "**Codeforces - Random daily**\n{problem_title}\n||{tags}||\n{link}"
-    }
-  ]
+    # big-brain-coding channel id
+    CHANNEL_ID = 1003624397749354506
 
-  HELP_MSG_STRING = """
-*BigBrainBot* is a discord bot made to replace warwolf.
-Automatically drops daily coding problems every three hours.
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
-Use **bot :get** command with any source (leetcode, legacy-leetcode, codechef, codeforces) to get problems.
-Use **bot :solution** followed by a github.com link to get a point.
-Use **bot :mypoints** command to get your Bigbrain points.
-Use **bot :deletepoints** command to delete your Bigbrain points.
+        # start the task to run in the background
+        self.redditUtil = RedditUtil()
+        self.write_daily_question.start()
 
-Use **pls meme** For a r/meme
-Use **pls comic** For a r/comics
+    def cleanup_db(self):
+        self.print_db()
+        for key in db.keys():
+            del db[key]
 
-**bot :help** displays this message."""
+    def print_db(self):
+        print("List of replit db Keys", db.keys())
 
-  def __init__(self, *args, **kwargs):
-    super().__init__(*args, **kwargs)
+    async def on_ready(self):
+        print(f'{self.user} has logged in.')
 
-    # start the task to run in the background
-    self.redditUtil = RedditUtil()
-    self.write_daily_question.start()
+    @tasks.loop(minutes=60 * 3)
+    async def write_daily_question(self):
+        helper = Helper()
+        todate = f"{date.today()}"
 
-  async def on_ready(self):
-    print(f'{self.user} has logged in.')
-    
-  @tasks.loop(minutes=60 * 3)
-  async def write_daily_question(self):
-    todate = f"{date.today()}"
+        for source in Helper.sources:
+            source_name = source["name"]
+            if source_name not in Helper.sources_to_use:
+                # print(f"'{source_name}' is not present in sources_to_use={Helper.sources_to_use}, skipping source.")
+                continue
 
-    for source in self.sources:
-      source_name = source["name"]
-      if not source_name in self.sources_to_use:
-        # print(f"'{source_name}' is not present in sources_to_use={self.sources_to_use}, skipping source.")
-        continue
-        
-      if not source_name in db.keys():
-        db[source_name] = "False"
+            if source_name not in db.keys():
+                db[source_name] = "False"
 
-      if not db[source_name] == todate:
-        problem = helper.scrape_daily_problem(source)
-        msg = problem['msg']
-        
-        channel = self.get_channel(self.CHANNEL_ID)
-        print(f"Sending {source_name} message {todate}")
-        db[source_name] = todate
-        await channel.send(msg)
-        break
-      else:
-        print(f"DB entry for {source_name} is present [{db[source_name]}], skipping post.")
-  
-  @write_daily_question.before_loop
-  async def before_my_task(self):
-    await self.wait_until_ready() # wait until the bot logs in
-  
-  async def on_message(self, message):
-    # we do not want the bot to reply to itself
-    if message.author.id == self.user.id:
-      return
+            if not db[source_name] == todate:
+                problem = helper.scrape_daily_problem(source)
+                msg = problem['msg']
 
-    author_id = f"{message.author.id}"
-    message_content = message.content.lower()
+                channel = self.get_channel(self.CHANNEL_ID)
+                print(f"Sending {source_name} message {todate}")
+                db[source_name] = todate
+                await channel.send(msg)
+                break
+            else:
+                print(
+                    f"DB entry for {source_name} is present [{db[source_name]}], skipping post.")
 
-    if "pls" in message_content:
-      if "meme" == message_content.replace("pls ", ''):
-        post_url = self.redditUtil.get_reddit_post(RedditUtil.MEMES_STR)
-        await message.channel.send(post_url)
-        return
+    @write_daily_question.before_loop
+    async def before_my_task(self):
+        await self.wait_until_ready()  # wait until the bot logs in
 
-      if "comic" == message_content.replace("pls ", ''):
-        post_url = self.redditUtil.get_reddit_post(RedditUtil.COMICS_STR)
-        await message.channel.send(post_url)
-        return
-
-    if "bot" in message_content:
-      if ":help" in message_content:
-        await message.channel.send(self.HELP_MSG_STRING)
-        return
-
-      if ":mypoints" in message_content:
-        if author_id in db.keys():
-          points = db[author_id]
-        else:
-          points = 0
-        await message.channel.send(f"Your have {points} points.")
-        return
-
-      if ":deletepoints" in message_content:
-        if author_id in db.keys():
-          del db[author_id]
-        await message.channel.send("points deleted.")
-        return
-
-      if ":solution" and "github.com" in message_content:
-        if not author_id in db.keys():
-          db[author_id] = 1
-        else:
-          db[author_id] += 1
-
-        messages_str = ['⊂(・▽・⊂)', 'mah man!', 'ayy', 'geng geng']
-        reply = random.choice(messages_str)
-        await message.channel.send(reply)
-        return
-
-      if ":get" in message_content:
-        source_name_list = ["leetcode", "legacy-leetcode", "codechef", "codeforces"]
-        for source_name in source_name_list:
-          if "bot :get " == message_content.replace(source_name, ''):
-            index = source_name_list.index(source_name)
-            source = self.sources[index]
-            problem = helper.scrape_daily_problem(source)
-            msg = problem['msg']
-            await message.channel.send(msg)
+    async def on_message(self, message):
+        # we do not want the bot to reply to itself
+        if message.author.id == self.user.id:
             return
 
-      #todo: UwU make this sentient, MR.I KnOw wHaT I WaNt iN LiFe can fix this
-      if any(element in message_content for element in ["thank you", "thanks", "arigato", "good"]):
-        await message.channel.send(":D")
-        return
+        message_content = message.content.lower()
 
-      if any(element in message_content for element in ["bad"]):
-        await message.channel.send(":(")
-        return
+        if "pls" in message_content:
+            if "meme" == message_content.replace("pls ", ''):
+                post_url = self.redditUtil.get_reddit_post(
+                    RedditUtil.MEMES_STR)
+                await message.channel.send(post_url)
+                return
 
-# Util.print_db()
-keep_alive()
+            if "comic" == message_content.replace("pls ", ''):
+                post_url = self.redditUtil.get_reddit_post(
+                    RedditUtil.COMICS_STR)
+                await message.channel.send(post_url)
+                return
+
+        if "bot" in message_content:
+            if ":help" in message_content:
+                await message.channel.send(Helper.HELP_MSG_STRING)
+                return
+
+            if ":get" in message_content:
+                helper = Helper()
+                source_name_list = [
+                    "leetcode", "legacy-leetcode", "codechef", "codeforces"]
+                for source_name in source_name_list:
+                    if "bot :get " == message_content.replace(source_name, ''):
+                        index = source_name_list.index(source_name)
+                        source = Helper.sources[index]
+                        problem = helper.scrape_daily_problem(source)
+                        msg = problem['msg']
+                        await message.channel.send(msg)
+                        return
+
+            # todo: UwU make this sentient, MR.I KnOw wHaT I WaNt iN LiFe can
+            # fix this
+            good_messages = ["thank you", "thanks", "arigato", "good"]
+            if any(element in message_content for element in good_messages):
+                await message.channel.send(":D")
+                return
+
+            if any(element in message_content for element in ["bad"]):
+                await message.channel.send(":(")
+                return
+
+
 client = DiscordClient()
+client.print_db()
 client.run(os.getenv('TOKEN'))

@@ -2,6 +2,7 @@ import collections
 import random
 import requests
 
+
 class RedditUtil:
     MEMES_STR = "memes"
     COMICS_STR = "comics"
@@ -20,8 +21,8 @@ class RedditUtil:
         metadata = {
             "subreddit": "memes",  # fallback subreddit
             "limit": 100,
-            "timeframe": "hour",  #hour, day, week, month, year, all
-            "listing":"hot"  # controversial, best, hot, new, random, rising, top
+            "timeframe": "hour",  # hour, day, week, month, year, all
+            "listing": "hot"  # controversial, best, hot, new, random, rising, top
         }
         return metadata
 
@@ -31,11 +32,12 @@ class RedditUtil:
             listing, limit, timeframe = metadata["listing"], metadata["limit"], metadata["timeframe"]
             base_url = f'https://www.reddit.com/r/{subreddit}/{listing}.json?limit={limit}&t={timeframe}'
             request = requests.get(base_url, headers={'User-agent': 'bot'})
-        except:
+        except BaseException:
             base_url = f'https://www.reddit.com/r/{metadata["subreddit"]}/{listing}.json?limit={limit}&t={timeframe}'
             request = requests.get(base_url, headers={'User-agent': 'bot'})
 
-        return request.json()[RedditUtil.DATA_JSON_KEY][RedditUtil.CHILDREN_JSON_KEY]
+        return request.json()[
+            RedditUtil.DATA_JSON_KEY][RedditUtil.CHILDREN_JSON_KEY]
 
     def get_reddit_post(self, subreddit):
         if subreddit in self.POSTS:
@@ -57,8 +59,8 @@ class RedditUtil:
                 # Filter adult content and videos
                 if (rawpost[RedditUtil.DATA_JSON_KEY]["over_18"] != True and
                     rawpost[RedditUtil.DATA_JSON_KEY]["is_video"] != True and
-                    rawpost[RedditUtil.DATA_JSON_KEY][RedditUtil.DOMAIN_JSON_KEY] == RedditUtil.IMAGES_DOMAIN_JSON_VALUE):
-                        posts.append(post_url)
+                        rawpost[RedditUtil.DATA_JSON_KEY][RedditUtil.DOMAIN_JSON_KEY] == RedditUtil.IMAGES_DOMAIN_JSON_VALUE):
+                    posts.append(post_url)
             self.POSTS[subreddit] = posts
 
         # print(json.dumps(posts))
@@ -68,19 +70,19 @@ class RedditUtil:
 
     def _set_already_Posted(self, post_url, subreddit):
         if post_url in self.POSTS[subreddit]:
-          self.POSTS[subreddit].remove(post_url)
+            self.POSTS[subreddit].remove(post_url)
         self.ALREADY_POSTED.append(post_url)
 
         limit = self._get_api_request_meta()["limit"]
         if len(self.ALREADY_POSTED) > limit * 3:
-          while self.ALREADY_POSTED and len(self.ALREADY_POSTED) >= limit:
-              self.ALREADY_POSTED.popleft()
+            while self.ALREADY_POSTED and len(self.ALREADY_POSTED) >= limit:
+                self.ALREADY_POSTED.popleft()
 
     def _is_Posted(self, post_url) -> bool:
         # post_url = raw_post[RedditUtil.DATA_JSON_KEY][RedditUtil.URL_JSON_KEY]
         return post_url in self.ALREADY_POSTED
 
-## Reddit Tests
+# Reddit Tests
 # redditUtil = RedditUtil()
 # for i in range(1,500):
 #     post = redditUtil.get_reddit_post(RedditUtil.MEMES_STR)
