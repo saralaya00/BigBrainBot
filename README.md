@@ -1,7 +1,9 @@
-# PeruvianCheeseOil
+# BigBrainBot
 A discord bot to drop daily coding problems on a specific channel.  
 Uses Codechef daily, leetcode and codeforces randoms as sources.  
 ![BigBrainBot](resources/bot-image.png "BigBrainBot")
+
+Also sends r/memes and r/comics from reddit if you ask nicely!
 
 ### References
 [tutorial](https://www.freecodecamp.org/news/create-a-discord-bot-with-python/)  
