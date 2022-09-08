@@ -7,6 +7,7 @@ from datetime import date
 from Helper import Helper
 from RedditUtil import RedditUtil
 
+
 class DiscordClient(discord.Client):
     # big-brain-coding channel id
     CHANNEL_ID = 1003624397749354506
@@ -36,11 +37,11 @@ class DiscordClient(discord.Client):
 
         for source in Helper.sources:
             source_name = source["name"]
-            if not source_name in Helper.sources_to_use:
+            if source_name not in Helper.sources_to_use:
                 # print(f"'{source_name}' is not present in sources_to_use={Helper.sources_to_use}, skipping source.")
                 continue
 
-            if not source_name in db.keys():
+            if source_name not in db.keys():
                 db[source_name] = "False"
 
             if not db[source_name] == todate:
@@ -98,14 +99,17 @@ class DiscordClient(discord.Client):
                         await message.channel.send(msg)
                         return
 
-            # todo: UwU make this sentient, MR.I KnOw wHaT I WaNt iN LiFe can fix this
-            if any(element in message_content for element in ["thank you", "thanks", "arigato", "good"]):
+            # todo: UwU make this sentient, MR.I KnOw wHaT I WaNt iN LiFe can
+            # fix this
+            good_messages = ["thank you", "thanks", "arigato", "good"]
+            if any(element in message_content for element in good_messages):
                 await message.channel.send(":D")
                 return
 
             if any(element in message_content for element in ["bad"]):
                 await message.channel.send(":(")
                 return
+
 
 client = DiscordClient()
 client.print_db()

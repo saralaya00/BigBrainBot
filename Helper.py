@@ -5,6 +5,7 @@ import requests
 from bs4 import BeautifulSoup
 from deprecated import deprecated
 
+
 class Helper:
     sources_to_use = ["leetcode"]
     # todo: use dict implementation instead of list
@@ -31,7 +32,8 @@ class Helper:
         },
         {
             "name": "codeforces",
-            # API Source where we can get the problemset json (manually used for now)
+            # API Source where we can get the problemset json (manually used
+            # for now)
             "problem_source": "https://codeforces.com/api/problemset.problems",
             "problem_dest": "https://codeforces.com/problemset/problem",
             "msg_template": "**Codeforces - Random daily**\n{problem_title}\n||{tags}||\n{link}"
@@ -62,13 +64,14 @@ Use **pls comic** For a r/comics
         return {
             "problem_title": problem_title,
             "link": link,
-            "msg": source["msg_template"].format(problem_title=problem_title, link=link)
-        }
+            "msg": source["msg_template"].format(
+                problem_title=problem_title,
+                link=link)}
 
     def get_codeforces_random(self, source):
-        current_index = [
-            "A", "B"
-        ]  # codeforces index to identify difficulty of the problem, lower is easier
+        # codeforces index to identify difficulty of the problem, lower is
+        # easier
+        current_index = ["A", "B"]
         with open('resources/codeforces_problemset.json') as fp:
             problemset = json.load(fp)
 
@@ -85,15 +88,18 @@ Use **pls comic** For a r/comics
         return {
             "problem_title": problem_title,
             "link": link,
-            "msg": source["msg_template"].format(problem_title=problem_title, link=link, tags=problem['tags'])
-        }
+            "msg": source["msg_template"].format(
+                problem_title=problem_title,
+                link=link,
+                tags=problem['tags'])}
 
     @deprecated(reason="now a legacy impl")
     def export_leetcodeMD_toJSON(self, source):
         url = source['problem_source']
         rawMD = requests.get(url).text.split('\n')
 
-        # A boolean that identifies that a '## Algorithms' header was identified so we can start to parse the required markdown table
+        # A boolean that identifies that a '## Algorithms' header was
+        # identified so we can start to parse the required markdown table
         isAlgo = False
         problemset = []
         for line in rawMD:
@@ -175,7 +181,8 @@ Use **pls comic** For a r/comics
         problemListJSON = problemListJSON['data']['questions']
         problemListJSON = list(
             filter(lambda obj: obj['paidOnly'] != True, problemListJSON))
-        # problemListJSON.sort(key=lambda k: int(k['frontendQuestionId'])) # Sort based on id
+        # problemListJSON.sort(key=lambda k: int(k['frontendQuestionId'])) #
+        # Sort based on id
 
         problem = random.choice(problemListJSON)
         tags = list(tag['name'] for tag in problem['topicTags'])

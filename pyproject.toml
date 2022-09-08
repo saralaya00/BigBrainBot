@@ -12,8 +12,8 @@ discord = "^1.7.3"
 Markdown = "^3.3.6"
 Deprecated = "^1.2.13"
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.dev - dependencies]
 
-[build-system]
+[build - system]
 requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+build - backend = "poetry.core.masonry.api"
