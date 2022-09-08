@@ -36,8 +36,7 @@ class RedditUtil:
             base_url = f'https://www.reddit.com/r/{metadata["subreddit"]}/{listing}.json?limit={limit}&t={timeframe}'
             request = requests.get(base_url, headers={'User-agent': 'bot'})
 
-        return request.json()[
-            RedditUtil.DATA_JSON_KEY][RedditUtil.CHILDREN_JSON_KEY]
+        return request.json()[RedditUtil.DATA_JSON_KEY][RedditUtil.CHILDREN_JSON_KEY]
 
     def get_reddit_post(self, subreddit):
         if subreddit in self.POSTS:
