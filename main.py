@@ -51,6 +51,10 @@ Use **bot :get** command with any source (leetcode, legacy-leetcode, codechef, c
 Use **bot :solution** followed by a github.com link to get a point.
 Use **bot :mypoints** command to get your Bigbrain points.
 Use **bot :deletepoints** command to delete your Bigbrain points.
+
+Use **pls meme** For a r/meme
+Use **pls comic** For a r/comics
+
 **bot :help** displays this message."""
 
   def __init__(self, *args, **kwargs):
@@ -103,12 +107,12 @@ Use **bot :deletepoints** command to delete your Bigbrain points.
     if "pls" in message_content:
       if "meme" == message_content.replace("pls ", ''):
         post_url = self.redditUtil.get_reddit_post(RedditUtil.MEMES_STR)
-        await message.channel.send(post)
+        await message.channel.send(post_url)
         return
 
       if "comic" == message_content.replace("pls ", ''):
         post_url = self.redditUtil.get_reddit_post(RedditUtil.COMICS_STR)
-        await message.channel.send(post)
+        await message.channel.send(post_url)
         return
 
     if "bot" in message_content:
