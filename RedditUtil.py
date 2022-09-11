@@ -74,6 +74,7 @@ class RedditUtil:
         if self.adjusted_date < date.today():
             for key, val in self.POSTS.items():
                 self.POSTS[key] = []
+            self.adjusted_date = date.today()
         elif post_url in self.POSTS[subreddit]:
             self.POSTS[subreddit].remove(post_url)
 
@@ -99,7 +100,7 @@ Already posted: {len(self.ALREADY_POSTED)}
 Total Posts: {counts}
         """
 
-# Reddit Tests
+## Reddit Tests
 # redditUtil = RedditUtil()
 # for i in range(1,500):
 #     if len(redditUtil.ALREADY_POSTED) > 50:

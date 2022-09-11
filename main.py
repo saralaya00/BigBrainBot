@@ -82,6 +82,7 @@ class DiscordClient(discord.Client):
             
             if "debug" == message_content.replace("pls ", self.EMPTY_STR):
                 info = self.redditUtil.debug_info()
+                print(info)
                 await message.channel.send(info)
 
         if "bot" in message_content:
