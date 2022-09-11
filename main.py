@@ -11,6 +11,7 @@ from RedditUtil import RedditUtil
 class DiscordClient(discord.Client):
     # big-brain-coding channel id
     CHANNEL_ID = 1003624397749354506
+    EMPTY_STR = ''
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -69,17 +70,19 @@ class DiscordClient(discord.Client):
         message_content = message.content.lower()
 
         if "pls" in message_content:
-            if "meme" == message_content.replace("pls ", ''):
-                post_url = self.redditUtil.get_reddit_post(
-                    RedditUtil.MEMES_STR)
+            if "meme" == message_content.replace("pls ", self.EMPTY_STR):
+                post_url = self.redditUtil.get_reddit_post(RedditUtil.MEMES_STR)
                 await message.channel.send(post_url)
                 return
 
-            if "comic" == message_content.replace("pls ", ''):
-                post_url = self.redditUtil.get_reddit_post(
-                    RedditUtil.COMICS_STR)
+            if "comic" == message_content.replace("pls ", self.EMPTY_STR):
+                post_url = self.redditUtil.get_reddit_post(RedditUtil.COMICS_STR)
                 await message.channel.send(post_url)
                 return
+            
+            if "debug" == message_content.replace("pls ", self.EMPTY_STR):
+                info = self.redditUtil.debug_info()
+                await message.channel.send(info)
 
         if "bot" in message_content:
             if ":help" in message_content:
@@ -88,10 +91,9 @@ class DiscordClient(discord.Client):
 
             if ":get" in message_content:
                 helper = Helper()
-                source_name_list = [
-                    "leetcode", "legacy-leetcode", "codechef", "codeforces"]
+                source_name_list = ["leetcode", "legacy-leetcode", "codechef", "codeforces"]
                 for source_name in source_name_list:
-                    if "bot :get " == message_content.replace(source_name, ''):
+                    if "bot :get " == message_content.replace(source_name, self.EMPTY_STR):
                         index = source_name_list.index(source_name)
                         source = Helper.sources[index]
                         problem = helper.scrape_daily_problem(source)
@@ -99,8 +101,6 @@ class DiscordClient(discord.Client):
                         await message.channel.send(msg)
                         return
 
-            # todo: UwU make this sentient, MR.I KnOw wHaT I WaNt iN LiFe can
-            # fix this
             good_messages = ["thank you", "thanks", "arigato", "good"]
             if any(element in message_content for element in good_messages):
                 await message.channel.send(":D")
