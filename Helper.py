@@ -11,15 +11,13 @@ class Helper:
     # todo: use dict implementation instead of list
     sources = [
         {
-            "name": "leetcode",
-            # Not required for now, since using offline source
+            "name": "leetcode", # Not required for now, since using offline source
             "problem_source": "https://leetcode-api-1d31.herokuapp.com",
             "problem_dest": "https://leetcode.com/problems/",
             "msg_template": "**Leetcode - Random daily (Experimental)**\n{id} - {title}\n||{tags}||\n{link}"
         },
         {
-            "name": "legacy-leetcode",
-            # md source, backup in https://github.com/saralaya00/Leetcode
+            "name": "legacy-leetcode", # md source, backup in https://github.com/saralaya00/Leetcode
             "problem_source": "https://raw.githubusercontent.com/fishercoder1534/Leetcode/master/README.md",
             "problem_dest": "https://leetcode.com/problems/",  # Not required for now
             "msg_template": "**Leetcode - Random daily**\n{id} - {title} ||**{difficulty}**||\n{link}"
@@ -31,9 +29,7 @@ class Helper:
             "msg_template": "**Codechef - Problem of the Day**\n{problem_title}\n{link}"
         },
         {
-            "name": "codeforces",
-            # API Source where we can get the problemset json (manually used
-            # for now)
+            "name": "codeforces", # API Source where we can get the problemset json (manually used for now)
             "problem_source": "https://codeforces.com/api/problemset.problems",
             "problem_dest": "https://codeforces.com/problemset/problem",
             "msg_template": "**Codeforces - Random daily**\n{problem_title}\n||{tags}||\n{link}"
@@ -205,7 +201,8 @@ Use **pls comic** For a r/comics
             "msg": msg
         }
 
-    def scrape_daily_problem(self, source):
+    # todo: since we have refactored sources, just use it internally
+    def get_daily_problem(self, source):
         source_name = source['name']
         if source_name == "codechef":
             return self.get_codechef_daily(source)
@@ -234,7 +231,7 @@ Use **pls comic** For a r/comics
 #   "msg_template" : "**Leetcode - Random daily (Experimental)**\n{id} - {title}\n||**{tags}**||\n{link}"
 # }
 
-# out = scrape_daily_problem(source)
+# out = get_daily_problem(source)
 # print(out['msg'])
 
 # Get JSON output for legacy implementation
