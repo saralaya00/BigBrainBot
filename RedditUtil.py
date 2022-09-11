@@ -96,9 +96,8 @@ class RedditUtil:
         
         return f"""
 Adjusted date: {self.adjusted_date}
-Already posted: {len(self.ALREADY_POSTED)}
-Total Posts: {counts}
-        """
+Total posted: {len(self.ALREADY_POSTED)}
+Posts ready: {counts}"""
 
 ## Reddit Tests
 # redditUtil = RedditUtil()

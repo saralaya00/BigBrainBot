@@ -14,19 +14,13 @@ class Helper:
             "name": "leetcode", # Not required for now, since using offline source
             "problem_source": "https://leetcode-api-1d31.herokuapp.com",
             "problem_dest": "https://leetcode.com/problems/",
-            "msg_template": "**Leetcode - Random daily (Experimental)**\n{id} - {title}\n||{tags}||\n{link}"
+            "msg_template": "**Leetcode - Random daily**\n{id} - {title}\n||{tags}||\n{link}"
         },
         {
             "name": "legacy-leetcode", # md source, backup in https://github.com/saralaya00/Leetcode
             "problem_source": "https://raw.githubusercontent.com/fishercoder1534/Leetcode/master/README.md",
             "problem_dest": "https://leetcode.com/problems/",  # Not required for now
             "msg_template": "**Leetcode - Random daily**\n{id} - {title} ||**{difficulty}**||\n{link}"
-        },
-        {
-            "name": "codechef",
-            "problem_source": "https://www.codechef.com",
-            "problem_dest": "https://www.codechef.com",
-            "msg_template": "**Codechef - Problem of the Day**\n{problem_title}\n{link}"
         },
         {
             "name": "codeforces", # API Source where we can get the problemset json (manually used for now)
@@ -40,29 +34,11 @@ class Helper:
 *BigBrainBot* is a discord bot made to replace warwolf.
 Automatically drops daily coding problems every three hours.
 
-Use **bot :get** command with any source (leetcode, legacy-leetcode, codechef, codeforces) to get problems.
+Use **bot :get** command with any source (leetcode, legacy-leetcode, codeforces) to get problems.
 Use **pls meme** For a r/meme
 Use **pls comic** For a r/comics
 
 **bot :help** displays this message."""
-
-    def get_codechef_daily(self, source):
-        url = source['problem_source']
-        plain = requests.get(url).text
-        soup = BeautifulSoup(plain, "html.parser")
-
-        # Identifies html tags and creates the message
-        div = soup.find('div', {'class': 'l-card-11'})
-        problem_title = div.find('p', {'class': 'm-card-11_head-2'}).text
-        anchor = div.find('a', {'class': 'm-button-1'})
-        link = url + anchor.get('href')
-
-        return {
-            "problem_title": problem_title,
-            "link": link,
-            "msg": source["msg_template"].format(
-                problem_title=problem_title,
-                link=link)}
 
     def get_codeforces_random(self, source):
         # codeforces index to identify difficulty of the problem, lower is
@@ -204,10 +180,7 @@ Use **pls comic** For a r/comics
     # todo: since we have refactored sources, just use it internally
     def get_daily_problem(self, source):
         source_name = source['name']
-        if source_name == "codechef":
-            return self.get_codechef_daily(source)
-
-        elif source_name == "codeforces":
+        if source_name == "codeforces":
             return self.get_codeforces_random(source)
 
         elif source_name == "leetcode":

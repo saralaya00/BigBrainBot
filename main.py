@@ -94,7 +94,7 @@ class DiscordClient(discord.Client):
 
             if ":get" in message_content:
                 helper = Helper()
-                source_name_list = ["leetcode", "legacy-leetcode", "codechef", "codeforces"]
+                source_name_list = ["leetcode", "legacy-leetcode", "codeforces"]
                 for source_name in source_name_list:
                     if self.is_simple_command("bot :get", source_name, message_content):
                         index = source_name_list.index(source_name)
@@ -104,14 +104,13 @@ class DiscordClient(discord.Client):
                         await message.channel.send(msg)
                         return
 
-            if self.is_simple_command("good", "bot", message_content):
+            if self.is_simple_command("bot", "good", message_content):
                 await message.channel.send(":D")
                 return
 
-            if self.is_simple_command("bad", "bot", message_content):
+            if self.is_simple_command("bot", "bad", message_content):
                 await message.channel.send(":(")
                 return
-
 
 client = DiscordClient()
 client.run(os.getenv('TOKEN'))
