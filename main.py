@@ -7,6 +7,7 @@ from datetime import date
 from Helper import Helper
 from RedditUtil import RedditUtil
 
+
 class DiscordClient(discord.Client):
     # big-brain-coding channel id
     CHANNEL_ID = 1003624397749354506
@@ -55,7 +56,8 @@ class DiscordClient(discord.Client):
                 break
             else:
                 print(
-                    f"DB entry for {source_name} is present [{db[source_name]}], skipping post.")
+                    f"DB entry for {source_name} is present [{db[source_name]}], skipping post."
+                )
 
     @write_daily_question.before_loop
     async def before_my_task(self):
@@ -70,17 +72,23 @@ class DiscordClient(discord.Client):
             return
 
         message_content = message.content.lower().strip()
-        if "pls" in message_content: 
+        if "pls" in message_content:
             if self.is_simple_command("pls", "meme", message_content):
-                post_url = self.redditUtil.get_reddit_post(RedditUtil.MEMES_STR)
-                await message.channel.send(post_url)
+                post = self.redditUtil.get_reddit_post(
+                    RedditUtil.MEMES_STR)
+                await message.channel.send(post)
                 return
 
+            if self.is_simple_command("pls", "dank", message_content):
+              post = self.redditUtil.get_reddit_post(RedditUtil.DANK_STR)
+              await message.channel.send(post)
+              
             if self.is_simple_command("pls", "comic", message_content):
-                post_url = self.redditUtil.get_reddit_post(RedditUtil.COMICS_STR)
-                await message.channel.send(post_url)
+                post = self.redditUtil.get_reddit_post(
+                    RedditUtil.COMICS_STR)
+                await message.channel.send(post)
                 return
-            
+
             if self.is_simple_command("pls", "debug", message_content):
                 info = self.redditUtil.debug_info()
                 print(info)
@@ -94,9 +102,12 @@ class DiscordClient(discord.Client):
 
             if ":get" in message_content:
                 helper = Helper()
-                source_name_list = ["leetcode", "legacy-leetcode", "codeforces"]
+                source_name_list = [
+                    "leetcode", "legacy-leetcode", "codeforces"
+                ]
                 for source_name in source_name_list:
-                    if self.is_simple_command("bot :get", source_name, message_content):
+                    if self.is_simple_command("bot :get", source_name,
+                                              message_content):
                         index = source_name_list.index(source_name)
                         source = Helper.sources[index]
                         problem = helper.get_daily_problem(source)

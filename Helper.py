@@ -35,8 +35,9 @@ class Helper:
 Automatically drops daily coding problems every three hours.
 
 Use **bot :get** command with any source (leetcode, legacy-leetcode, codeforces) to get problems.
-Use **pls meme** For a r/meme
-Use **pls comic** For a r/comics
+Use **pls meme** for a r/memes
+Use **pls dank** for a r/dankmemes
+Use **pls comic** for a r/comics
 
 **bot :help** displays this message."""
 

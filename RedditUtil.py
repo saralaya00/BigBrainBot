@@ -6,6 +6,7 @@ from datetime import date
 
 class RedditUtil:
     MEMES_STR = "memes"
+    DANK_STR = "dankmemes"
     COMICS_STR = "comics"
 
     DATA_JSON_KEY = "data"
@@ -22,7 +23,7 @@ class RedditUtil:
     def _get_api_request_meta(self):
         metadata = {
             "subreddit": "memes",  # fallback subreddit
-            "limit": 100,
+            "limit": 200,
             "timeframe": "hour",  # hour, day, week, month, year, all
             "listing": "hot"  # controversial, best, hot, new, random, rising, top
         }
@@ -62,7 +63,10 @@ class RedditUtil:
                     rawpost[RedditUtil.DATA_JSON_KEY]["is_video"] != True and
                         rawpost[RedditUtil.DATA_JSON_KEY][RedditUtil.DOMAIN_JSON_KEY] == RedditUtil.IMAGES_DOMAIN_JSON_VALUE):
                     posts.append(post_url)
-            self.POSTS[subreddit] = posts
+            if posts:
+              self.POSTS[subreddit] = posts
+            else
+              return "No more posts here, try another subreddit!"
 
         # print(json.dumps(posts))
         post_url = random.choice(posts)
