@@ -34,6 +34,7 @@ class RedditUtil:
             metadata = self._get_api_request_meta()
             listing, limit, timeframe = metadata["listing"], metadata["limit"], metadata["timeframe"]
             base_url = f'https://www.reddit.com/r/{subreddit}/{listing}.json?limit={limit}&t={timeframe}'
+            # https://www.reddit.com/r/memes/hot.json?limit=100&t=hour
             request = requests.get(base_url, headers={'User-agent': 'bot'})
         except BaseException:
             base_url = f'https://www.reddit.com/r/{metadata["subreddit"]}/{listing}.json?limit={limit}&t={timeframe}'
@@ -65,7 +66,7 @@ class RedditUtil:
                     posts.append(post_url)
             if posts:
               self.POSTS[subreddit] = posts
-            else
+            else:
               return "No more posts here, try another subreddit!"
 
         # print(json.dumps(posts))
@@ -78,22 +79,24 @@ class RedditUtil:
         if self.adjusted_date < date.today():
             for key, val in self.POSTS.items():
                 self.POSTS[key] = []
+
+            limit = self._get_api_request_meta()["limit"]
+            while self.ALREADY_POSTED and len(self.ALREADY_POSTED) >= limit * 3:
+              self.ALREADY_POSTED.popleft()
+              
             self.adjusted_date = date.today()
         elif post_url in self.POSTS[subreddit]:
             self.POSTS[subreddit].remove(post_url)
 
         # Cleanup Already Posted list
         self.ALREADY_POSTED.append(post_url)
-        limit = self._get_api_request_meta()["limit"]
-        if self.ALREADY_POSTED and len(self.ALREADY_POSTED) > limit * 3:
-            while len(self.ALREADY_POSTED) >= limit:
-                self.ALREADY_POSTED.popleft()
 
     def _is_Posted(self, post_url) -> bool:
         # post_url = raw_post[RedditUtil.DATA_JSON_KEY][RedditUtil.URL_JSON_KEY]
         return post_url in self.ALREADY_POSTED
 
     def debug_info(self):
+        print("debug tortoise")
         counts = {}
         for subreddit in self.POSTS:
             counts[subreddit] = len(self.POSTS[subreddit])
