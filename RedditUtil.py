@@ -79,16 +79,18 @@ class RedditUtil:
         if self.adjusted_date < date.today():
             for key, val in self.POSTS.items():
                 self.POSTS[key] = []
-
+            
+            # Cleanup Already Posted list
             limit = self._get_api_request_meta()["limit"]
-            while self.ALREADY_POSTED and len(self.ALREADY_POSTED) >= limit * 3:
-              self.ALREADY_POSTED.popleft()
+            n = max(0, len(self.ALREADY_POSTED) - (limit * 3))
+            map(apply, repeat(self.ALREADY_POSTED.popleft, n))
+            # while self.ALREADY_POSTED and len(self.ALREADY_POSTED) >= limit * 3:
+            #   self.ALREADY_POSTED.popleft()
               
             self.adjusted_date = date.today()
         elif post_url in self.POSTS[subreddit]:
             self.POSTS[subreddit].remove(post_url)
 
-        # Cleanup Already Posted list
         self.ALREADY_POSTED.append(post_url)
 
     def _is_Posted(self, post_url) -> bool:
@@ -96,7 +98,6 @@ class RedditUtil:
         return post_url in self.ALREADY_POSTED
 
     def debug_info(self):
-        print("debug tortoise")
         counts = {}
         for subreddit in self.POSTS:
             counts[subreddit] = len(self.POSTS[subreddit])
