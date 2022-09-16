@@ -1,4 +1,5 @@
 import collections
+import itertools
 import random
 import requests
 
@@ -77,13 +78,19 @@ class RedditUtil:
     def _set_already_Posted(self, post_url, subreddit):
         # Cleanup Posts
         if self.adjusted_date < date.today():
+            print("Adjustment")
+            print(self.debug_info())
             for key, val in self.POSTS.items():
                 self.POSTS[key] = []
             
             # Cleanup Already Posted list
             limit = self._get_api_request_meta()["limit"]
-            n = max(0, len(self.ALREADY_POSTED) - (limit * 3))
-            map(apply, repeat(self.ALREADY_POSTED.popleft, n))
+            subs = max(1, len(self.POSTS.keys()))
+            n = max(0, len(self.ALREADY_POSTED) - (limit * subs))
+
+            print(f"Subs:{subs} N:{n}")
+            for _ in range(n):  
+              self.ALREADY_POSTED.popleft() 
             # while self.ALREADY_POSTED and len(self.ALREADY_POSTED) >= limit * 3:
             #   self.ALREADY_POSTED.popleft()
               

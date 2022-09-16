@@ -5,8 +5,8 @@ from replit import db
 from discord.ext import tasks
 from datetime import date
 from Helper import Helper
+from os import system
 from RedditUtil import RedditUtil
-
 
 class DiscordClient(discord.Client):
     # big-brain-coding channel id
@@ -123,5 +123,14 @@ class DiscordClient(discord.Client):
                 await message.channel.send(":(")
                 return
 
+        if "gandalf" in message_content:
+          await message.channel.send("Fool of a Took!")
+          return
+
 client = DiscordClient()
-client.run(os.getenv('TOKEN'))
+try:
+  client.run(os.getenv('TOKEN'))
+except discord.errors.HTTPException:
+  print("\n\n\nBLOCKED BY RATE LIMITS\nRESTARTING NOW\n\n\n")
+  system("python Restart.py")
+  system('kill 1')
