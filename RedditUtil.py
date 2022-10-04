@@ -1,5 +1,4 @@
 import collections
-import itertools
 import random
 import requests
 
@@ -9,7 +8,8 @@ class RedditUtil:
     MEMES_STR = "memes"
     DANK_STR = "dankmemes"
     COMICS_STR = "comics"
-
+    SNAC_STR = "animemes"
+  
     DATA_JSON_KEY = "data"
     CHILDREN_JSON_KEY = "children"
     DOMAIN_JSON_KEY = "domain"
@@ -78,7 +78,7 @@ class RedditUtil:
     def _set_already_Posted(self, post_url, subreddit):
         # Cleanup Posts
         if self.adjusted_date < date.today():
-            print("Adjustment")
+            print(f"Performing Adjustment ({self.adjusted_date}, {date.today()})")
             print(self.debug_info())
             for key, val in self.POSTS.items():
                 self.POSTS[key] = []
@@ -88,7 +88,7 @@ class RedditUtil:
             subs = max(1, len(self.POSTS.keys()))
             n = max(0, len(self.ALREADY_POSTED) - (limit * subs))
 
-            print(f"Subs:{subs} N:{n}")
+            print(f"Subs:{subs} Already posted:{len(self.ALREADY_POSTED)} N:{n}")
             for _ in range(n):  
               self.ALREADY_POSTED.popleft() 
             # while self.ALREADY_POSTED and len(self.ALREADY_POSTED) >= limit * 3:

@@ -32,14 +32,21 @@ class Helper:
 
     HELP_MSG_STRING = """
 *BigBrainBot* is a discord bot made to replace warwolf.
-Automatically drops daily coding problems every three hours.
+Automatically drops daily coding problems on a predefined channel.
+
+Use **pls help** to get reddit mem commands
+Use **code help** to get coding problem commands
+Use **todo help** to get simple todo commands
 
 Use **bot :get** command with any source (leetcode, legacy-leetcode, codeforces) to get problems.
 Use **pls meme** for a r/memes
 Use **pls dank** for a r/dankmemes
+Use **pls snac** for a r/animemes
 Use **pls comic** for a r/comics
 
-**bot :help** displays this message."""
+Use **todo daily** to add your daily todo entries (This will a be permanently saved items)
+
+**bot help** displays this message."""
 
     def get_codeforces_random(self, source):
         # codeforces index to identify difficulty of the problem, lower is

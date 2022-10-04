@@ -1,6 +1,8 @@
 import discord
 import os
 
+from enum import auto
+from enum import Enum
 from replit import db
 from discord.ext import tasks
 from datetime import date
@@ -8,6 +10,13 @@ from Helper import Helper
 from os import system
 from RedditUtil import RedditUtil
 
+class SimpleCommands(Enum):
+  pls = auto()
+  meme = auto()
+  comic = auto()
+  snac = auto()
+  
+  
 class DiscordClient(discord.Client):
     # big-brain-coding channel id
     CHANNEL_ID = 1003624397749354506
@@ -82,6 +91,12 @@ class DiscordClient(discord.Client):
             if self.is_simple_command("pls", "dank", message_content):
               post = self.redditUtil.get_reddit_post(RedditUtil.DANK_STR)
               await message.channel.send(post)
+              return
+
+            if self.is_simple_command("pls", "snac", message_content):
+              post = self.redditUtil.get_reddit_post(RedditUtil.SNAC_STR)
+              await message.channel.send(post)
+              return
               
             if self.is_simple_command("pls", "comic", message_content):
                 post = self.redditUtil.get_reddit_post(
@@ -132,5 +147,6 @@ try:
   client.run(os.getenv('TOKEN'))
 except discord.errors.HTTPException:
   print("\n\n\nBLOCKED BY RATE LIMITS\nRESTARTING NOW\n\n\n")
-  system("python Restart.py")
   system('kill 1')
+  system("python Restart.py")
+  
