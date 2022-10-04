@@ -1,3 +1,5 @@
+import asyncio
+import datetime
 import discord
 import os
 
@@ -10,17 +12,38 @@ from Helper import Helper
 from os import system
 from RedditUtil import RedditUtil
 
-class SimpleCommands(Enum):
-  pls = auto()
-  meme = auto()
-  comic = auto()
-  snac = auto()
+class SimpleCommandHelper(): 
+  class Commands(Enum):
+    pls = auto()
+    meme = auto()
+    comic = auto()
+    snac = auto()
+    
+  def __init__(self):
+    self.commands = self.Commands
+    pass
+
+  def get_command_group(self, group):
+    if self.commands.pls == group:
+      print(self.commands.pls)
+      return self.commands.pls 
   
   
 class DiscordClient(discord.Client):
     # big-brain-coding channel id
     CHANNEL_ID = 1003624397749354506
     EMPTY_STR = ''
+    HELP_MSG_STRING = """
+*BigBrainBot* is a discord bot made to replace warwolf.
+Automatically drops daily coding problems on a predefined channel.
+
+[Major code changes in progress]
+[Commands are not guaranteed to work]
+[@radcakes for excuses]
+
+Use **pls help** to get memes and utility commands
+Use **code help** to get coding problems related commands
+Use **bot help** to display this message"""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -81,7 +104,29 @@ class DiscordClient(discord.Client):
             return
 
         message_content = message.content.lower().strip()
+        multiline_message = message.content.strip()
+          
         if "pls" in message_content:
+            command = message_content.splitlines()[0].split(' ')
+            command = command[0] + ' ' + command[1]
+            if self.is_simple_command("pls", "todo", command):
+              targets = ""
+              for todo in multiline_message.splitlines()[1:]:
+                if todo == self.EMPTY_STR:
+                  continue
+                targets += "> " + todo.replace("> ", '', 1) + "\n"
+              msg = f"""** {date.today().strftime("%A %b %d %Y")} **
+:dart: **Target**
+{targets}:fire: **Done**
+> ~~Make todo~~"""
+              sent = await message.channel.send(msg)
+              info = await message.channel.send("*This message will auto delete in 15 seconds..*")
+              await asyncio.sleep(15)
+              await info.delete()
+              await sent.delete()
+              # await message.delete()
+              return
+              
             if self.is_simple_command("pls", "meme", message_content):
                 post = self.redditUtil.get_reddit_post(
                     RedditUtil.MEMES_STR)
@@ -105,14 +150,17 @@ class DiscordClient(discord.Client):
                 return
 
             if self.is_simple_command("pls", "debug", message_content):
-                info = self.redditUtil.debug_info()
-                print(info)
-                self.print_db()
+                # info = self.redditUtil.debug_info()
+                # print(info)
+                # self.print_db()
+                sph = SimpleCommandHelper()
+                info = sph.get_command_group(sph.commands.pls)
                 await message.channel.send(info)
+                return
 
         if "bot" in message_content:
-            if self.is_simple_command("bot", ":help", message_content):
-                await message.channel.send(Helper.HELP_MSG_STRING)
+            if self.is_simple_command("bot", "help", message_content):
+                await message.channel.send(self.HELP_MSG_STRING)
                 return
 
             if ":get" in message_content:
@@ -149,4 +197,3 @@ except discord.errors.HTTPException:
   print("\n\n\nBLOCKED BY RATE LIMITS\nRESTARTING NOW\n\n\n")
   system('kill 1')
   system("python Restart.py")
-  
