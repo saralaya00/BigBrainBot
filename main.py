@@ -13,26 +13,57 @@ from os import system
 from RedditUtil import RedditUtil
 
 class SimpleCommandHelper(): 
+  EMPTY_STR = ''
+  
   class Commands(Enum):
     pls = auto()
+    
     meme = auto()
+    code = auto()
+    todo = auto()
+    
+    dank = auto()
     comic = auto()
     snac = auto()
+    debug = auto()
+
+    get = auto()
+    leetcode = auto()
+    codeforces = auto()
+    
+    bot = auto()
+    good = auto()
+    bad = auto()
+    
+    help = auto()
     
   def __init__(self):
     self.commands = self.Commands
-    pass
-
-  def get_command_group(self, group):
-    if self.commands.pls == group:
-      print(self.commands.pls)
-      return self.commands.pls 
   
+  def is_simple_command(self, prefix, cmd, message_content):
+      return cmd.name == message_content.replace(prefix.name, self.EMPTY_STR).strip()
+      
+  def get_command_groups(self, group):
+      pls = self.commands.pls
+
+      if pls == group:
+        groups = [
+          [pls, self.commands.meme, "Use **pls meme** for a r/memes"],
+          [pls, self.commands.dank, "Use **pls dank** for a r/dankmemes"],
+          [pls, self.commands.comic, "Use **pls comic** for a r/comics"],
+          [pls, self.commands.snac, "Use **pls snac** for a r/animemes"],
+          [pls, self.commands.todo, "Use **pls todo** followed by todo items to create a todo-list"],
+          [pls, self.commands.debug, "Use **pls debug** to show debug info"],
+          [pls, self.commands.help, "Use **pls help** to display this message"]
+        ]
+        return groups
+      elif code == group:
+        groups = []
+        return groups  
   
 class DiscordClient(discord.Client):
     # big-brain-coding channel id
     CHANNEL_ID = 1003624397749354506
-    EMPTY_STR = ''
     HELP_MSG_STRING = """
 *BigBrainBot* is a discord bot made to replace warwolf.
 Automatically drops daily coding problems on a predefined channel.
@@ -43,6 +74,7 @@ Automatically drops daily coding problems on a predefined channel.
 
 Use **pls help** to get memes and utility commands
 Use **code help** to get coding problems related commands
+Use **todo help** to get todo-list related commands
 Use **bot help** to display this message"""
 
     def __init__(self, *args, **kwargs):
@@ -87,108 +119,105 @@ Use **bot help** to display this message"""
                 await channel.send(msg)
                 break
             else:
-                print(
-                    f"DB entry for {source_name} is present [{db[source_name]}], skipping post."
-                )
+                print(f"DB entry for {source_name} is present [{db[source_name]}], skipping post.")
 
     @write_daily_question.before_loop
     async def before_my_task(self):
         await self.wait_until_ready()  # wait until the bot logs in
 
-    def is_simple_command(self, prefix, cmd, message_content):
-        return cmd == message_content.replace(prefix, self.EMPTY_STR).strip()
-
     async def on_message(self, message):
         # we do not want the bot to reply to itself
         if message.author.id == self.user.id:
-            return
-
+          return
+  
         message_content = message.content.lower().strip()
         multiline_message = message.content.strip()
-          
-        if "pls" in message_content:
-            command = message_content.splitlines()[0].split(' ')
-            command = command[0] + ' ' + command[1]
-            if self.is_simple_command("pls", "todo", command):
-              targets = ""
-              for todo in multiline_message.splitlines()[1:]:
-                if todo == self.EMPTY_STR:
-                  continue
-                targets += "> " + todo.replace("> ", '', 1) + "\n"
-              msg = f"""** {date.today().strftime("%A %b %d %Y")} **
-:dart: **Target**
-{targets}:fire: **Done**
-> ~~Make todo~~"""
-              sent = await message.channel.send(msg)
-              info = await message.channel.send("*This message will auto delete in 15 seconds..*")
-              await asyncio.sleep(15)
-              await info.delete()
-              await sent.delete()
-              # await message.delete()
-              return
-              
-            if self.is_simple_command("pls", "meme", message_content):
-                post = self.redditUtil.get_reddit_post(
-                    RedditUtil.MEMES_STR)
-                await message.channel.send(post)
-                return
 
-            if self.is_simple_command("pls", "dank", message_content):
-              post = self.redditUtil.get_reddit_post(RedditUtil.DANK_STR)
-              await message.channel.send(post)
-              return
+        cmd = SimpleCommandHelper()
+        commands = cmd.commands
 
-            if self.is_simple_command("pls", "snac", message_content):
-              post = self.redditUtil.get_reddit_post(RedditUtil.SNAC_STR)
-              await message.channel.send(post)
-              return
-              
-            if self.is_simple_command("pls", "comic", message_content):
-                post = self.redditUtil.get_reddit_post(
-                    RedditUtil.COMICS_STR)
-                await message.channel.send(post)
-                return
+        if cmd.is_simple_command(commands.bot, commands.good, message_content):
+            await message.channel.send(":D")
+            return
 
-            if self.is_simple_command("pls", "debug", message_content):
-                # info = self.redditUtil.debug_info()
-                # print(info)
-                # self.print_db()
-                sph = SimpleCommandHelper()
-                info = sph.get_command_group(sph.commands.pls)
-                await message.channel.send(info)
-                return
-
-        if "bot" in message_content:
-            if self.is_simple_command("bot", "help", message_content):
-                await message.channel.send(self.HELP_MSG_STRING)
-                return
-
-            if ":get" in message_content:
-                helper = Helper()
-                source_name_list = [
-                    "leetcode", "legacy-leetcode", "codeforces"
-                ]
-                for source_name in source_name_list:
-                    if self.is_simple_command("bot :get", source_name,
-                                              message_content):
-                        index = source_name_list.index(source_name)
-                        source = Helper.sources[index]
-                        problem = helper.get_daily_problem(source)
-                        msg = problem['msg']
-                        await message.channel.send(msg)
-                        return
-
-            if self.is_simple_command("bot", "good", message_content):
-                await message.channel.send(":D")
-                return
-
-            if self.is_simple_command("bot", "bad", message_content):
-                await message.channel.send(":(")
-                return
+        if cmd.is_simple_command(commands.bot, commands.bad, message_content):
+            await message.channel.send(":(")
+            return
 
         if "gandalf" in message_content:
           await message.channel.send("Fool of a Took!")
           return
+          
+        if cmd.is_simple_command(commands.pls, commands.help, message_content):
+          await message.channel.send(self.HELP_MSG_STRING)
+          return
+          
+        if cmd.is_simple_command(commands.pls, commands.meme, message_content):
+            post = self.redditUtil.get_reddit_post(RedditUtil.MEMES_STR)
+            await message.channel.send(post)
+            return
+
+        if cmd.is_simple_command(commands.pls, commands.dank, message_content):
+          post = self.redditUtil.get_reddit_post(RedditUtil.DANK_STR)
+          await message.channel.send(post)
+          return
+
+        if cmd.is_simple_command(commands.pls, commands.snac, message_content):
+          post = self.redditUtil.get_reddit_post(RedditUtil.SNAC_STR)
+          await message.channel.send(post)
+          return
+              
+        if cmd.is_simple_command(commands.pls, commands.comic, message_content):
+            post = self.redditUtil.get_reddit_post(RedditUtil.COMICS_STR)
+            await message.channel.send(post)
+            return
+
+        if cmd.is_simple_command(commands.pls, commands.debug, message_content):
+            # info = self.redditUtil.debug_info()
+            # print(info)
+            # self.print_db()
+            sph = SimpleCommandHelper()
+            info = sph.get_command_groups(sph.commands.pls)
+            await message.channel.send(info)
+            return
+
+        if commands.pls.name in message_content:
+          if commands.todo.name in message_content:
+            lines = message_content.splitlines()[0].split(' ')
+            msg_command = lines[0] + ' ' + lines[1]
+        
+            if cmd.is_simple_command(commands.pls, commands.todo, msg_command):
+              targets = ""
+              for todo in multiline_message.splitlines()[1:]:
+                if todo == cmd.EMPTY_STR:
+                  continue
+                targets += "> " + todo.replace("> ", '', 1) + "\n"
+                
+              formatted_msg = f"""
+** {date.today().strftime("%A %b %d %Y")} **
+:dart: **Target**
+{targets}:fire: **Done**
+> ~~Make todo~~"""
+              warn_msg = "*Hold to copy the above message!\nRemoving in 15 seconds...*"
+              msg = await message.channel.send(formatted_msg)
+              warning = await message.channel.send(warn_msg)
+              await asyncio.sleep(15)
+              await warning.delete()
+              await msg.delete()
+              return
+            
+            if commands.get.name in message_content:
+                helper = Helper()
+                source_name_list = [commands.leetcode, commands.codeforces]
+                for source_name in source_name_list:
+                  already_checked = commands.pls.name + ' '
+                  if cmd.is_simple_command(commands.get, source_name, message_content.replace(already_checked, '')):
+                    index = source_name_list.index(source_name)
+                    source = Helper.sources[index]
+                    problem = helper.get_daily_problem(source)
+                    msg = problem['msg']
+                    await message.channel.send(msg)
+                    return
 
 client = DiscordClient()
 try:
