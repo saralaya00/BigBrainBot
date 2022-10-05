@@ -12,55 +12,62 @@ from Helper import Helper
 from os import system
 from RedditUtil import RedditUtil
 
-class SimpleCommandHelper(): 
+class SimpleCommandHelper():
+  SPACE_STR = ' '
   EMPTY_STR = ''
+  INFO_INDEX = 2
+  META_INDEX = 3
   
   class Commands(Enum):
-    pls = auto()
-    
-    meme = auto()
-    code = auto()
-    todo = auto()
-    
-    dank = auto()
-    comic = auto()
-    snac = auto()
-    debug = auto()
-
-    get = auto()
-    leetcode = auto()
-    codeforces = auto()
-    
-    bot = auto()
-    good = auto()
-    bad = auto()
-    
-    help = auto()
+    (
+      pls, meme, dank, comic, snac, debug,
+      todo, done,
+      get, leetcode, codeforces, 
+      good, bad, 
+      help, bot, code
+    ) = range(16)
     
   def __init__(self):
     self.commands = self.Commands
+    pls = self.commands.pls
+
+    self.GROUPS = {
+      self.commands.help: [
+        [self.commands.pls, self.commands.help, "Use **pls help** to get memes and utility commands"],
+        [self.commands.code, self.commands.help, "Use **code help** to get coding problems related commands"],
+        [self.commands.todo, self.commands.help, "Use **todo help** to get todo-list related commands"],
+        [self.commands.bot, self.commands.help, "Use **bot help** to display parent message"],
+      ],
+      self.commands.code: [
+        [pls, self.commands.get, "Use **pls get** and sources to get coding problems"],
+        [pls, self.commands.leetcode, "Use **pls get leetcode** to get a random leetcode problem"],
+        [pls, self.commands.codeforces, "Use **pls get codeforces** to get a random codeforces problem"],
+        [self.commands.bot, self.commands.help, "Use **bot help** to display parent message"],
+      ],
+      self.commands.pls: [
+        [pls, self.commands.meme, "Use **pls meme** for a r/memes"],
+        [pls, self.commands.dank, "Use **pls dank** for a r/dankmemes"],
+        [pls, self.commands.comic, "Use **pls comic** for a r/comics"],
+        [pls, self.commands.snac, "Use **pls snac** for a r/animemes"],
+        [pls, self.commands.debug, "Use **pls debug** to show debug info"],
+        [self.commands.bot, self.commands.help, "Use **bot help** to display parent message"],
+      ],
+      self.commands.todo: [
+        [pls, self.commands.todo, "To create a simple todo-list use\n**pls todo\n<target-1>\n<target-2>\n....**"],
+        [pls, self.commands.done, "To create a simple done-list use\n**pls done\n<item-1>\n<item-2>\n....**"],
+        [self.commands.bot, self.commands.help, "Use **bot help** to display parent message"],
+      ]
+    }
   
   def is_simple_command(self, prefix, cmd, message_content):
       return cmd.name == message_content.replace(prefix.name, self.EMPTY_STR).strip()
-      
-  def get_command_groups(self, group):
-      pls = self.commands.pls
 
-      if pls == group:
-        groups = [
-          [pls, self.commands.meme, "Use **pls meme** for a r/memes"],
-          [pls, self.commands.dank, "Use **pls dank** for a r/dankmemes"],
-          [pls, self.commands.comic, "Use **pls comic** for a r/comics"],
-          [pls, self.commands.snac, "Use **pls snac** for a r/animemes"],
-          [pls, self.commands.todo, "Use **pls todo** followed by todo items to create a todo-list"],
-          [pls, self.commands.debug, "Use **pls debug** to show debug info"],
-          [pls, self.commands.help, "Use **pls help** to display this message"]
-        ]
-        return groups
-      elif code == group:
-        groups = []
-        return groups  
-  
+  def get_help(self, group):
+    message = ""
+    for item in self.GROUPS[group]:
+      message += item[self.INFO_INDEX] + "\n"
+    return message
+    
 class DiscordClient(discord.Client):
     # big-brain-coding channel id
     CHANNEL_ID = 1003624397749354506
@@ -70,12 +77,8 @@ Automatically drops daily coding problems on a predefined channel.
 
 [Major code changes in progress]
 [Commands are not guaranteed to work]
-[@radcakes for excuses]
-
-Use **pls help** to get memes and utility commands
-Use **code help** to get coding problems related commands
-Use **todo help** to get todo-list related commands
-Use **bot help** to display this message"""
+[@radcakes for excuses]\n
+"""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -123,7 +126,8 @@ Use **bot help** to display this message"""
 
     @write_daily_question.before_loop
     async def before_my_task(self):
-        await self.wait_until_ready()  # wait until the bot logs in
+        # wait until the bot logs in
+        await self.wait_until_ready()
 
     async def on_message(self, message):
         # we do not want the bot to reply to itself
@@ -136,6 +140,21 @@ Use **bot help** to display this message"""
         cmd = SimpleCommandHelper()
         commands = cmd.commands
 
+        if "gandalf" in message_content:
+          await message.channel.send("Fool of a Took!")
+          return
+          
+        if commands.help.name in message_content:
+          if cmd.is_simple_command(commands.bot, commands.help, message_content):
+            msg = self.HELP_MSG_STRING + cmd.get_help(commands.help)
+            await message.channel.send(msg)
+            return
+          
+          for prefix in [commands.pls, commands.code, commands.todo]:
+            if cmd.is_simple_command(prefix, commands.help, message_content):
+              await message.channel.send(cmd.get_help(prefix))
+              return
+            
         if cmd.is_simple_command(commands.bot, commands.good, message_content):
             await message.channel.send(":D")
             return
@@ -143,14 +162,6 @@ Use **bot help** to display this message"""
         if cmd.is_simple_command(commands.bot, commands.bad, message_content):
             await message.channel.send(":(")
             return
-
-        if "gandalf" in message_content:
-          await message.channel.send("Fool of a Took!")
-          return
-          
-        if cmd.is_simple_command(commands.pls, commands.help, message_content):
-          await message.channel.send(self.HELP_MSG_STRING)
-          return
           
         if cmd.is_simple_command(commands.pls, commands.meme, message_content):
             post = self.redditUtil.get_reddit_post(RedditUtil.MEMES_STR)
@@ -173,17 +184,27 @@ Use **bot help** to display this message"""
             return
 
         if cmd.is_simple_command(commands.pls, commands.debug, message_content):
-            # info = self.redditUtil.debug_info()
-            # print(info)
-            # self.print_db()
-            sph = SimpleCommandHelper()
-            info = sph.get_command_groups(sph.commands.pls)
+            info = self.redditUtil.debug_info()
+            print(info)
+            self.print_db()
             await message.channel.send(info)
             return
 
         if commands.pls.name in message_content:
+          if commands.get.name in message_content:
+            helper = Helper()
+            source_name_list = [commands.leetcode, commands.codeforces]
+            for source_name in source_name_list:
+              already_checked = commands.pls.name + cmd.SPACE_STR
+              if cmd.is_simple_command(commands.get, source_name, message_content.replace(already_checked, '')):
+                index = source_name_list.index(source_name)
+                source = Helper.sources[index]
+                problem = helper.get_daily_problem(source)
+                msg = problem['msg']
+                await message.channel.send(msg)
+                return
           if commands.todo.name in message_content:
-            lines = message_content.splitlines()[0].split(' ')
+            lines = message_content.splitlines()[0].split(cmd.SPACE_STR)
             msg_command = lines[0] + ' ' + lines[1]
         
             if cmd.is_simple_command(commands.pls, commands.todo, msg_command):
@@ -205,19 +226,6 @@ Use **bot help** to display this message"""
               await warning.delete()
               await msg.delete()
               return
-            
-            if commands.get.name in message_content:
-                helper = Helper()
-                source_name_list = [commands.leetcode, commands.codeforces]
-                for source_name in source_name_list:
-                  already_checked = commands.pls.name + ' '
-                  if cmd.is_simple_command(commands.get, source_name, message_content.replace(already_checked, '')):
-                    index = source_name_list.index(source_name)
-                    source = Helper.sources[index]
-                    problem = helper.get_daily_problem(source)
-                    msg = problem['msg']
-                    await message.channel.send(msg)
-                    return
 
 client = DiscordClient()
 try:
