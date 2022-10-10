@@ -16,7 +16,6 @@ class SimpleCommandHelper():
   SPACE_STR = ' '
   EMPTY_STR = ''
   INFO_INDEX = 2
-  META_INDEX = 3
   
   class Commands(Enum):
     (
@@ -53,8 +52,8 @@ class SimpleCommandHelper():
         [self.commands.bot, self.commands.help, "Use **bot help** to display parent message"],
       ],
       self.commands.todo: [
-        [pls, self.commands.todo, "To create a simple todo-list use\n**pls todo\n<target-1>\n<target-2>\n....**"],
-        [pls, self.commands.done, "To create a simple done-list use\n**pls done\n<item-1>\n<item-2>\n....**"],
+        [pls, self.commands.todo, "To create a simple todo-list use\n**pls todo\n<target-1>\n<target-2>\n...**"],
+        [pls, self.commands.done, "To create a simple done-list use\n**pls done\n<item-1>\n<item-2>\n...**"],
         [self.commands.bot, self.commands.help, "Use **bot help** to display parent message"],
       ]
     }
@@ -72,13 +71,24 @@ class DiscordClient(discord.Client):
     # big-brain-coding channel id
     CHANNEL_ID = 1003624397749354506
     HELP_MSG_STRING = """
-*BigBrainBot* is a discord bot made to replace warwolf.
+*BigBrainBot* is a General Purpose Useless Toy (discord bot) made to replace warwolf.
 Automatically drops daily coding problems on a predefined channel.
 
 [Major code changes in progress]
 [Commands are not guaranteed to work]
 [@radcakes for excuses]\n
 """
+    TODO_format = f"""
+** {date.today().strftime("%A %b %d %Y")} **
+:dart: **Target**
+$targets:fire: **Done**
+> ~~Make todo~~"""
+
+    DONE_format = f"""
+** {date.today().strftime("%A %b %d %Y")} **
+:recycle: **Things to remember**
+$targets:100: **Things Done**
+> ~~Make todo~~"""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -129,13 +139,17 @@ Automatically drops daily coding problems on a predefined channel.
         # wait until the bot logs in
         await self.wait_until_ready()
 
-    async def send_message(self, content, message_util, delete_after=0):
-      if delete_after:
+    async def send_messages(self, contents, message_util, delete_after=0):
+      sent_msg = []
+      for content in contents:
         msg = await message_util.channel.send(content)
+        sent_msg.append(msg)
+        
+      if delete_after:
         await asyncio.sleep(delete_after)
-        await msg.delete()
-      else:
-        await message_util.channel.send(content)
+        while sent_msg:
+          msg = sent_msg.pop()
+          await msg.delete()
         
     async def on_message(self, message):
         # we do not want the bot to reply to itself
@@ -152,45 +166,44 @@ Automatically drops daily coding problems on a predefined channel.
           await message.channel.send("Fool of a Took!")
           return
           
+        # Thor: Hey, let’s do “Get Help.” Come on, you love it.
+        # Loki: I hate it.
+        # Thor: It’s great. It works every time.
+        # Loki: It’s humiliating.
+        # Thor: We’re doing it.
         if commands.help.name in message_content:
           if cmd.is_simple_command(commands.bot, commands.help, message_content):
             content = self.HELP_MSG_STRING + cmd.get_help(commands.help)
-            await self.send_message(content, message, 60)
+            await self.send_messages([content], message, 60)
             return
           
           for prefix in [commands.pls, commands.code, commands.todo]:
             if cmd.is_simple_command(prefix, commands.help, message_content):
-              await self.send_message(cmd.get_help(prefix), message, 60)
+              await self.send_messages([cmd.get_help(prefix)], message, 60)
               return
             
         if cmd.is_simple_command(commands.bot, commands.good, message_content):
-            await self.send_message(":D", message)
+            await self.send_messages([":D"], message)
             return
 
         if cmd.is_simple_command(commands.bot, commands.bad, message_content):
-            await self.send_message(":(", message)  
-            return
-          
-        if cmd.is_simple_command(commands.pls, commands.meme, message_content):
-            post = self.redditUtil.get_reddit_post(RedditUtil.MEMES_STR)
-            await message.channel.send(post)
-            return
-
-        if cmd.is_simple_command(commands.pls, commands.dank, message_content):
-          post = self.redditUtil.get_reddit_post(RedditUtil.DANK_STR)
-          await message.channel.send(post)
+          await self.send_messages([":("], message)
           return
 
-        if cmd.is_simple_command(commands.pls, commands.snac, message_content):
-          post = self.redditUtil.get_reddit_post(RedditUtil.SNAC_STR)
-          await message.channel.send(post)
-          return
-              
-        if cmd.is_simple_command(commands.pls, commands.comic, message_content):
-            post = self.redditUtil.get_reddit_post(RedditUtil.COMICS_STR)
-            await message.channel.send(post)
-            return
+        # Get mems from reddit
+        reddit_meta = {
+          commands.meme: RedditUtil.MEMES_STR,
+          commands.dank: RedditUtil.DANK_STR,
+          commands.snac: RedditUtil.SNAC_STR,
+          commands.comic: RedditUtil.COMICS_STR,
+        }
 
+        for type in [commands.meme, commands.dank, commands.snac, commands.comic]:
+          if cmd.is_simple_command(commands.pls, type, message_content):
+            post = self.redditUtil.get_reddit_post(reddit_meta[type])
+            await self.send_messages([post], message)
+            return
+            
         if cmd.is_simple_command(commands.pls, commands.debug, message_content):
             info = self.redditUtil.debug_info()
             print(info)
@@ -211,30 +224,36 @@ Automatically drops daily coding problems on a predefined channel.
                 msg = problem['msg']
                 await message.channel.send(msg)
                 return
-          if commands.todo.name in message_content:
-            lines = message_content.splitlines()[0].split(cmd.SPACE_STR)
-            msg_command = lines[0] + ' ' + lines[1]
-        
-            if cmd.is_simple_command(commands.pls, commands.todo, msg_command):
-              targets = ""
-              for todo in multiline_message.splitlines()[1:]:
-                if todo == cmd.EMPTY_STR:
-                  continue
-                targets += "> " + todo.replace("> ", '', 1) + "\n"
                 
-              formatted_msg = f"""
-** {date.today().strftime("%A %b %d %Y")} **
-:dart: **Target**
-{targets}:fire: **Done**
-> ~~Make todo~~"""
-              warn_msg = "*Hold to copy the above message!\nRemoving in 15 seconds...*"
-              msg = await message.channel.send(formatted_msg)
-              warning = await message.channel.send(warn_msg)
-              await asyncio.sleep(15)
-              await warning.delete()
-              await msg.delete()
-              return
+          # todo generators 
+          if commands.todo.name or commands.done.name in message_content:
+            first_line = message_content.splitlines()[0].split(cmd.SPACE_STR)
+            msg_command = first_line[0] + ' ' + first_line[1]
+            
+            warn_msg = "*Hold to copy the above message!\nRemoving in 15 seconds...*"
+            templates = {
+              commands.todo: self.TODO_format,
+              commands.done: self.DONE_format,
+            }
+            
+            for type in [commands.todo, commands.done]:
+              if cmd.is_simple_command(commands.pls, type, msg_command):
+                todo_msg = self.create_todo(multiline_message.splitlines()[1:], templates[type])
+                await self.send_messages([todo_msg, warn_msg], message, 15)
+                return
+              
 
+    def create_todo(self, todos, msg_template):
+      quote_fmt = "> "
+      targets = ""
+      for todo in todos:
+        if todo == SimpleCommandHelper.EMPTY_STR:
+          continue
+        targets += quote_fmt + todo.replace(quote_fmt, SimpleCommandHelper.EMPTY_STR, 1) + "\n"
+
+      todolist = msg_template.replace("$targets", targets)
+      return todolist
+      
 client = DiscordClient()
 try:
   client.run(os.getenv('TOKEN'))
