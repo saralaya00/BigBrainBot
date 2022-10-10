@@ -14,4 +14,11 @@ Also sends r/memes and r/comics from reddit if you ask nicely!
 [codeforces problem schema](https://codeforces.com/apiHelp/objects#Problem)  
 
 [leetode (legacy implementation) problems list fishercoder1534/Leetcode](https://github.com/fishercoder1534/Leetcode)  
-[leetcode metadata from Ruin9999/leetcode-api](https://github.com/Ruin9999/leetcode-api)
+[leetcode metadata from Ruin9999/leetcode-api](https://github.com/Ruin9999/leetcode-api)  
+
+### Stack Overflow threads
+[deleting-a-bots-message-in-discord-py](https://stackoverflow.com/questions/49159850/deleting-a-bots-message-in-discord-py#49161009)  
+[multi-lined-artificial-enums](https://stackoverflow.com/questions/4512414/python-multi-lined-artificial-enums-using-range)  
+
+
+ 

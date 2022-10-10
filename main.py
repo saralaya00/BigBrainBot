@@ -129,6 +129,14 @@ Automatically drops daily coding problems on a predefined channel.
         # wait until the bot logs in
         await self.wait_until_ready()
 
+    async def send_message(self, content, message_util, delete_after=0):
+      if delete_after:
+        msg = await message_util.channel.send(content)
+        await asyncio.sleep(delete_after)
+        await msg.delete()
+      else:
+        await message_util.channel.send(content)
+        
     async def on_message(self, message):
         # we do not want the bot to reply to itself
         if message.author.id == self.user.id:
@@ -146,21 +154,21 @@ Automatically drops daily coding problems on a predefined channel.
           
         if commands.help.name in message_content:
           if cmd.is_simple_command(commands.bot, commands.help, message_content):
-            msg = self.HELP_MSG_STRING + cmd.get_help(commands.help)
-            await message.channel.send(msg)
+            content = self.HELP_MSG_STRING + cmd.get_help(commands.help)
+            await self.send_message(content, message, 60)
             return
           
           for prefix in [commands.pls, commands.code, commands.todo]:
             if cmd.is_simple_command(prefix, commands.help, message_content):
-              await message.channel.send(cmd.get_help(prefix))
+              await self.send_message(cmd.get_help(prefix), message, 60)
               return
             
         if cmd.is_simple_command(commands.bot, commands.good, message_content):
-            await message.channel.send(":D")
+            await self.send_message(":D", message)
             return
 
         if cmd.is_simple_command(commands.bot, commands.bad, message_content):
-            await message.channel.send(":(")
+            await self.send_message(":(", message)  
             return
           
         if cmd.is_simple_command(commands.pls, commands.meme, message_content):
@@ -196,7 +204,7 @@ Automatically drops daily coding problems on a predefined channel.
             source_name_list = [commands.leetcode, commands.codeforces]
             for source_name in source_name_list:
               already_checked = commands.pls.name + cmd.SPACE_STR
-              if cmd.is_simple_command(commands.get, source_name, message_content.replace(already_checked, '')):
+              if cmd.is_simple_command(commands.get, source_name, message_content.replace(already_checked, cmd.EMPTY_STR)):
                 index = source_name_list.index(source_name)
                 source = Helper.sources[index]
                 problem = helper.get_daily_problem(source)
