@@ -21,10 +21,10 @@ class SimpleCommandHelper():
     (
       pls, meme, dank, comic, snac, debug,
       todo, done,
-      get, leetcode, codeforces, 
+      get, leetcode, sqleetcode, codeforces, 
       good, bad, 
       help, bot, code
-    ) = range(16)
+    ) = range(17)
     
   def __init__(self):
     self.commands = self.Commands
@@ -40,6 +40,7 @@ class SimpleCommandHelper():
       self.commands.code: [
         [pls, self.commands.get, "Use **pls get** and sources to get coding problems"],
         [pls, self.commands.leetcode, "Use **pls get leetcode** to get a random leetcode problem"],
+        [pls, self.commands.sqleetcode, "Use **pls get sqleetcode** to get a random leetcode sql problem"],
         [pls, self.commands.codeforces, "Use **pls get codeforces** to get a random codeforces problem"],
         [self.commands.bot, self.commands.help, "Use **bot help** to display parent message"],
       ],
@@ -212,9 +213,10 @@ $targets:100: **Things Done**
             return
 
         if commands.pls.name in message_content:
+          # Custom problem questions
           if commands.get.name in message_content:
             helper = Helper()
-            source_name_list = [commands.leetcode, commands.codeforces]
+            source_name_list = [commands.leetcode, commands.sqleetcode, commands.codeforces]
             for source_name in source_name_list:
               already_checked = commands.pls.name + cmd.SPACE_STR
               if cmd.is_simple_command(commands.get, source_name, message_content.replace(already_checked, cmd.EMPTY_STR)):

@@ -7,7 +7,7 @@ from deprecated import deprecated
 
 
 class Helper:
-    sources_to_use = ["leetcode"]
+    sources_to_use = ["leetcode", "sqleetcode"]
     # todo: use dict implementation instead of list
     sources = [
         {
@@ -15,6 +15,12 @@ class Helper:
             "problem_source": "https://leetcode-api-1d31.herokuapp.com",
             "problem_dest": "https://leetcode.com/problems/",
             "msg_template": "**Leetcode - Random daily**\n{id} - {title}\n||{tags}||\n{link}"
+        },
+        { 
+            "name": "sqleetcode", # Not required for now, since using offline source
+            "problem_source": "https://leetcode-api-1d31.herokuapp.com",
+            "problem_dest": "https://leetcode.com/problems/",
+            "msg_template": "**SQLeetcode - Random daily**\n{id} - {title}\n||{tags}||\n{link}"
         },
         {
             "name": "legacy-leetcode", # md source, backup in https://github.com/saralaya00/Leetcode
@@ -29,24 +35,6 @@ class Helper:
             "msg_template": "**Codeforces - Random daily**\n{problem_title}\n||{tags}||\n{link}"
         }
     ]
-
-    HELP_MSG_STRING = """
-*BigBrainBot* is a discord bot made to replace warwolf.
-Automatically drops daily coding problems on a predefined channel.
-
-Use **pls help** to get reddit mem commands
-Use **code help** to get coding problem commands
-Use **todo help** to get simple todo commands
-
-Use **bot :get** command with any source (leetcode, legacy-leetcode, codeforces) to get problems.
-Use **pls meme** for a r/memes
-Use **pls dank** for a r/dankmemes
-Use **pls snac** for a r/animemes
-Use **pls comic** for a r/comics
-
-Use **todo daily** to add your daily todo entries (This will a be permanently saved items)
-
-**bot help** displays this message."""
 
     def get_codeforces_random(self, source):
         # codeforces index to identify difficulty of the problem, lower is
@@ -153,14 +141,27 @@ Use **todo daily** to add your daily todo entries (This will a be permanently sa
             "msg": msg
         }
 
-    def get_leetcode_random(self, source):
+    def get_leetcode_random(self, source, get_sql=False):
         with open('resources/leetcode_problems.json') as fp:
             problemListJSON = json.load(fp)
 
         # Filter
         problemListJSON = problemListJSON['data']['questions']
-        problemListJSON = list(
-            filter(lambda obj: obj['paidOnly'] != True, problemListJSON))
+        problemListJSON = list(filter(lambda obj: obj['paidOnly'] != True, problemListJSON))
+        
+        def filter_sql(problemListJSON, get_sql):
+          sql_tag = 'Database'
+          sqlListJSON = list()
+          codeListJSON = list()
+          for obj in problemListJSON:
+            for tag in obj['topicTags']:
+              if sql_tag == tag['name']:
+                sqlListJSON.append(obj)
+              else:
+                codeListJSON.append(obj)
+          return sqlListJSON if get_sql else codeListJSON
+          
+        problemListJSON = filter_sql(problemListJSON, get_sql)
         # problemListJSON.sort(key=lambda k: int(k['frontendQuestionId'])) #
         # Sort based on id
 
@@ -189,13 +190,16 @@ Use **todo daily** to add your daily todo entries (This will a be permanently sa
     def get_daily_problem(self, source):
         source_name = source['name']
         if source_name == "codeforces":
-            return self.get_codeforces_random(source)
+          return self.get_codeforces_random(source)
 
         elif source_name == "leetcode":
-            return self.get_leetcode_random(source)
+          return self.get_leetcode_random(source, False)
+
+        elif source_name == "sqleetcode":
+          return self.get_leetcode_random(source, True)
 
         elif source_name == "legacy-leetcode":
-            return self.get_legacy_leetcode(source)
+          return self.get_legacy_leetcode(source)
 
         else:
             return {
