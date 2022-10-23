@@ -20,11 +20,11 @@ class SimpleCommandHelper():
   class Commands(Enum):
     (
       pls, meme, dank, comic, snac, debug,
-      todo, done,
+      todo, done, todopc, donepc,
       get, leetcode, sqleetcode, codeforces, 
       good, bad, 
       help, bot, code
-    ) = range(17)
+    ) = range(19)
     
   def __init__(self):
     self.commands = self.Commands
@@ -55,6 +55,8 @@ class SimpleCommandHelper():
       self.commands.todo: [
         [pls, self.commands.todo, "To create a simple todo-list use\n**pls todo\n<target-1>\n<target-2>\n...**"],
         [pls, self.commands.done, "To create a simple done-list use\n**pls done\n<item-1>\n<item-2>\n...**"],
+        [pls, self.commands.todopc, "Same as todo-list, but returns a raw format for PC users"],
+        [pls, self.commands.donepc, "Same as done-list, but returns a raw format for PC users"],
         [self.commands.bot, self.commands.help, "Use **bot help** to display parent message"],
       ]
     }
@@ -65,6 +67,8 @@ class SimpleCommandHelper():
   def get_help(self, group):
     message = ""
     for item in self.GROUPS[group]:
+      cmds = " ".join([cmd.name for cmd in item[:self.INFO_INDEX]])
+      message += f"__{cmds}__\n"
       message += item[self.INFO_INDEX] + "\n"
     return message
     
@@ -83,13 +87,13 @@ Automatically drops daily coding problems on a predefined channel.
 ** {date.today().strftime("%A %b %d %Y")} **
 :dart: **Target**
 $targets:fire: **Done**
-> ~~Make todo~~"""
+$done"""
 
     DONE_format = f"""
 ** {date.today().strftime("%A %b %d %Y")} **
 :recycle: **Things to remember**
 $targets:100: **Things Done**
-> ~~Make todo~~"""
+$done"""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -228,7 +232,7 @@ $targets:100: **Things Done**
                 return
                 
           # todo generators 
-          if commands.todo.name or commands.done.name in message_content:
+          if commands.todo.name in message_content or commands.done.name in message_content:
             first_line = message_content.splitlines()[0].split(cmd.SPACE_STR)
             msg_command = first_line[0] + ' ' + first_line[1]
             
@@ -236,16 +240,25 @@ $targets:100: **Things Done**
             templates = {
               commands.todo: self.TODO_format,
               commands.done: self.DONE_format,
+              commands.todopc: self.TODO_format,
+              commands.donepc: self.DONE_format,
             }
             
             for type in [commands.todo, commands.done]:
               if cmd.is_simple_command(commands.pls, type, msg_command):
-                todo_msg = self.create_todo(multiline_message.splitlines()[1:], templates[type])
+                todo_msg = self.create_todo(multiline_message.splitlines()[1:], templates[type], False)
+                await self.send_messages([todo_msg, warn_msg], message, 15)
+                return
+              
+            for type in [commands.todopc, commands.donepc]:
+              if cmd.is_simple_command(commands.pls, type, msg_command):
+                todo_msg = self.create_todo(multiline_message.splitlines()[1:], templates[type], True)
                 await self.send_messages([todo_msg, warn_msg], message, 15)
                 return
               
 
-    def create_todo(self, todos, msg_template):
+    def create_todo(self, todos, msg_template, return_rawfmt=False):
+      default_todo = "Make todo"
       quote_fmt = "> "
       targets = ""
       for todo in todos:
@@ -253,7 +266,16 @@ $targets:100: **Things Done**
           continue
         targets += quote_fmt + todo.replace(quote_fmt, SimpleCommandHelper.EMPTY_STR, 1) + "\n"
 
-      todolist = msg_template.replace("$targets", targets)
+      todolist = msg_template
+      if todos:
+        todolist = todolist.replace("$targets", targets)
+        todolist = todolist.replace("$done", quote_fmt + "~~" + default_todo + "~~\n")
+      else:
+        todolist = todolist.replace("$targets", quote_fmt + default_todo + "\n")
+        todolist = todolist.replace("$done", quote_fmt + "...\n")
+        
+      if return_rawfmt:
+        return "```" + todolist + "\n```"
       return todolist
       
 client = DiscordClient()
