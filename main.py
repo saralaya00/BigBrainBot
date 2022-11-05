@@ -15,16 +15,15 @@ from RedditUtil import RedditUtil
 class SimpleCommandHelper():
   SPACE_STR = ' '
   EMPTY_STR = ''
-  INFO_INDEX = 2
   
   class Commands(Enum):
     (
-      pls, meme, dank, comic, snac, debug,
-      todo, done, todopc, donepc,
-      get, leetcode, sqleetcode, codeforces, 
-      good, bad, 
-      help, bot, code
-    ) = range(19)
+      pls, meme, dank, comic, snac, debug, #6
+      misc, hello, todo, done, todopc, donepc, #6
+      get, leetcode, sqleetcode, codeforces,  #4
+      good, bad, #2
+      help, bot, code, #3
+    ) = range(21)
     
   def __init__(self):
     self.commands = self.Commands
@@ -34,14 +33,13 @@ class SimpleCommandHelper():
       self.commands.help: [
         [self.commands.pls, self.commands.help, "Use **pls help** to get memes and utility commands"],
         [self.commands.code, self.commands.help, "Use **code help** to get coding problems related commands"],
-        [self.commands.todo, self.commands.help, "Use **todo help** to get todo-list related commands"],
+        [self.commands.misc, self.commands.help, "Use **misc help** to get miscellaneous commands"],
         [self.commands.bot, self.commands.help, "Use **bot help** to display parent message"],
       ],
       self.commands.code: [
-        [pls, self.commands.get, "Use **pls get** and sources to get coding problems"],
-        [pls, self.commands.leetcode, "Use **pls get leetcode** to get a random leetcode problem"],
-        [pls, self.commands.sqleetcode, "Use **pls get sqleetcode** to get a random leetcode sql problem"],
-        [pls, self.commands.codeforces, "Use **pls get codeforces** to get a random codeforces problem"],
+        [pls, self.commands.get, self.commands.leetcode, "Use **pls get leetcode** to get a random leetcode problem"],
+        [pls, self.commands.get, self.commands.sqleetcode, "Use **pls get sqleetcode** to get a random leetcode sql problem"],
+        [pls, self.commands.get, self.commands.codeforces, "Use **pls get codeforces** to get a random codeforces problem"],
         [self.commands.bot, self.commands.help, "Use **bot help** to display parent message"],
       ],
       self.commands.pls: [
@@ -52,7 +50,8 @@ class SimpleCommandHelper():
         [pls, self.commands.debug, "Use **pls debug** to show debug info"],
         [self.commands.bot, self.commands.help, "Use **bot help** to display parent message"],
       ],
-      self.commands.todo: [
+      self.commands.misc: [
+        [pls, self.commands.hello, "Say hello to a user"],
         [pls, self.commands.todo, "To create a simple todo-list use\n**pls todo\n<target-1>\n<target-2>\n...**"],
         [pls, self.commands.done, "To create a simple done-list use\n**pls done\n<item-1>\n<item-2>\n...**"],
         [pls, self.commands.todopc, "Same as todo-list, but returns a raw format for PC users"],
@@ -67,9 +66,9 @@ class SimpleCommandHelper():
   def get_help(self, group):
     message = ""
     for item in self.GROUPS[group]:
-      cmds = " ".join([cmd.name for cmd in item[:self.INFO_INDEX]])
-      message += f"__{cmds}__\n"
-      message += item[self.INFO_INDEX] + "\n"
+      cmds = " ".join([cmd.name for cmd in item[:-1]])
+      message += f"`{cmds}`\n"
+      message += item[-1] + "\n"
     return message
     
 class DiscordClient(discord.Client):
@@ -85,15 +84,14 @@ Automatically drops daily coding problems on a predefined channel.
 """
     TODO_format = f"""
 ** {date.today().strftime("%A %b %d %Y")} **
-:dart: **Target**
+>>> :dart: **Target**
 $targets:fire: **Done**
 $done"""
 
     DONE_format = f"""
 ** {date.today().strftime("%A %b %d %Y")} **
-:recycle: **Things to remember**
-$targets:100: **Things Done**
-$done"""
+>>> :100: **Things Done**
+$targets"""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -182,7 +180,7 @@ $done"""
             await self.send_messages([content], message, 60)
             return
           
-          for prefix in [commands.pls, commands.code, commands.todo]:
+          for prefix in [commands.pls, commands.code, commands.misc]:
             if cmd.is_simple_command(prefix, commands.help, message_content):
               await self.send_messages([cmd.get_help(prefix)], message, 60)
               return
@@ -260,19 +258,27 @@ $done"""
     def create_todo(self, todos, msg_template, return_rawfmt=False):
       default_todo = "Make todo"
       quote_fmt = "> "
+      blquote_fmt = ">>> "
       targets = ""
       for todo in todos:
         if todo == SimpleCommandHelper.EMPTY_STR:
           continue
-        targets += quote_fmt + todo.replace(quote_fmt, SimpleCommandHelper.EMPTY_STR, 1) + "\n"
+        if todo[:2] == quote_fmt or todo[:4] == blquote_fmt:
+          todo = todo.replace(blquote_fmt, SimpleCommandHelper.EMPTY_STR, 1)
+          todo = todo.replace(quote_fmt, SimpleCommandHelper.EMPTY_STR, 1)
+        targets += todo + "\n"
 
       todolist = msg_template
       if todos:
         todolist = todolist.replace("$targets", targets)
-        todolist = todolist.replace("$done", quote_fmt + "~~" + default_todo + "~~\n")
+        todolist = todolist.replace("$done", "~~" + default_todo + "~~\n")
+        # todolist = todolist.replace("$targets", quote_fmt + targets)
+        # todolist = todolist.replace("$done", quote_fmt + "~~" + default_todo + "~~\n")
       else:
-        todolist = todolist.replace("$targets", quote_fmt + default_todo + "\n")
-        todolist = todolist.replace("$done", quote_fmt + "...\n")
+        todolist = todolist.replace("$targets", default_todo + "\n")
+        todolist = todolist.replace("$done", "...\n")
+        # todolist = todolist.replace("$targets", quote_fmt + default_todo + "\n")
+        # todolist = todolist.replace("$done", quote_fmt + "...\n")
         
       if return_rawfmt:
         return "```" + todolist + "\n```"
