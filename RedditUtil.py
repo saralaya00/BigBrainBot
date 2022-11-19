@@ -9,6 +9,7 @@ class RedditUtil:
     DANK_STR = "dankmemes"
     COMICS_STR = "comics"
     SNAC_STR = "animemes"
+    HOPE_STR = "hopeposting"
   
     DATA_JSON_KEY = "data"
     CHILDREN_JSON_KEY = "children"
@@ -24,7 +25,7 @@ class RedditUtil:
     def _get_api_request_meta(self):
         metadata = {
             "subreddit": "memes",  # fallback subreddit
-            "limit": 200,
+            "limit": 100,
             "timeframe": "hour",  # hour, day, week, month, year, all
             "listing": "hot"  # controversial, best, hot, new, random, rising, top
         }
@@ -91,8 +92,6 @@ class RedditUtil:
             print(f"Subs:{subs} Already posted:{len(self.ALREADY_POSTED)} N:{n}")
             for _ in range(n):  
               self.ALREADY_POSTED.popleft() 
-            # while self.ALREADY_POSTED and len(self.ALREADY_POSTED) >= limit * 3:
-            #   self.ALREADY_POSTED.popleft()
               
             self.adjusted_date = date.today()
         elif post_url in self.POSTS[subreddit]:

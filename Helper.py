@@ -3,10 +3,11 @@ import markdown
 import random
 import requests
 from bs4 import BeautifulSoup
+from datetime import date
 from deprecated import deprecated
 
-
 class Helper:
+    EMPTY_STR = ''
     sources_to_use = ["leetcode", "sqleetcode"]
     # todo: use dict implementation instead of list
     sources = [
@@ -35,6 +36,17 @@ class Helper:
             "msg_template": "**Codeforces - Random daily**\n{problem_title}\n||{tags}||\n{link}"
         }
     ]
+
+    TODO_format = f"""
+** {date.today().strftime("%A %b %d %Y")} **
+>>> :dart: **Target**
+$targets:fire: **Done**
+$done"""
+
+    DONE_format = f"""
+** {date.today().strftime("%A %b %d %Y")} **
+>>> :100: **Things Done**
+$targets"""
 
     def get_codeforces_random(self, source):
         # codeforces index to identify difficulty of the problem, lower is
@@ -207,6 +219,31 @@ class Helper:
                 "link": "Bad Implementation",
                 "msg": "Bad Implementation"
             }
+
+    def create_todo(self, todos, msg_template, getrawfmt=False):
+      default_todo = "Make todo"
+      quote_fmt = "> "
+      blquote_fmt = ">>> "
+      targets = ""
+      for todo in todos:
+        if todo == self.EMPTY_STR:
+          continue
+        if todo[:2] == quote_fmt or todo[:4] == blquote_fmt:
+          todo = todo.replace(blquote_fmt, self.EMPTY_STR, 1)
+          todo = todo.replace(quote_fmt, self.EMPTY_STR, 1)
+        targets += todo + "\n"
+
+      todolist = msg_template
+      if todos:
+        todolist = todolist.replace("$targets", targets)
+        todolist = todolist.replace("$done", "~~" + default_todo + "~~\n")
+      else:
+        todolist = todolist.replace("$targets", default_todo + "\n")
+        todolist = todolist.replace("$done", "...\n")
+        
+      if getrawfmt:
+        return "```" + todolist + "\n```"
+      return todolist
 
 # # For Testing
 # source = {
