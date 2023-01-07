@@ -18,12 +18,12 @@ class SimpleCommandHelper():
   
   class Commands(Enum):
     (
-      pls, meme, dank, comic, snac, hope, mix, debug, #8
+      pls, meme, dank, comic, snac, hope, mix, nuke, debug, #9
       misc, todo, done, todopc, donepc, #5
       get, leetcode, sqleetcode, codeforces,  #4
       good, bad, #2
       help, bot, code, #3
-    ) = range(22)
+    ) = range(23)
     
   def __init__(self):
     self.commands = self.Commands
@@ -48,6 +48,7 @@ class SimpleCommandHelper():
         [pls, self.commands.comic, "Use **pls comic** for a r/comics"],
         [pls, self.commands.snac, "Use **pls snac** for a r/animemes"],
         [pls, self.commands.hope, "Use **pls hope** for a r/hopeposting"],
+				[pls, self.commands.nuke, "Use **pls nuke** for a r/nukedmemes"],
         [pls, self.commands.mix, "[TODO] Use **pls mix** for a mix of memes"],
         [pls, self.commands.debug, "Use **pls debug** to show debug info"],
         [self.commands.bot, self.commands.help, "Use **bot help** to display parent message"],
@@ -152,7 +153,7 @@ Automatically drops daily coding problems on a predefined channel.
   
         message_content = message.content.lower().strip()
         multiline_message = message.content.strip()
-
+      
         cmd = SimpleCommandHelper()
         commands = cmd.commands
 
@@ -191,6 +192,7 @@ Automatically drops daily coding problems on a predefined channel.
           commands.snac: RedditUtil.SNAC_STR,
           commands.comic: RedditUtil.COMICS_STR,
           commands.hope: RedditUtil.HOPE_STR,
+					commands.nuke: RedditUtil.NUKE_STR
         }
 
         for type in reddit_meta.keys():
