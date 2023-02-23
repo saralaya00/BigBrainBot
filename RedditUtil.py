@@ -10,7 +10,6 @@ class RedditUtil:
 	COMICS_STR = "comics"
 	SNAC_STR = "animemes"
 	HOPE_STR = "hopeposting"
-	NUKE_STR = "nukedmemes"
 
 	DATA_JSON_KEY = "data"
 	CHILDREN_JSON_KEY = "children"

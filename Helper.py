@@ -289,5 +289,4 @@ $targets"""
 # Get JSON output for legacy implementation
 # # export_leetcodeMD_toJSON(source)
 
-
 # print(Helper().get_valid_counting_number("999 Hello World!"))

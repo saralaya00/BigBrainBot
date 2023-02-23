@@ -18,12 +18,12 @@ class SimpleCommandHelper():
   
   class Commands(Enum):
     (
-      pls, meme, dank, comic, snac, hope, mix, nuke, debug, #9
+      pls, meme, dank, comic, snac, hope, debug, #7
       misc, todo, done, todopc, donepc, #5
       get, leetcode, sqleetcode, codeforces,  #4
       good, bad, #2
       help, bot, code, #3
-    ) = range(23)
+    ) = range(21)
     
   def __init__(self):
     self.commands = self.Commands
@@ -48,8 +48,6 @@ class SimpleCommandHelper():
         [pls, self.commands.comic, "Use **pls comic** for a r/comics"],
         [pls, self.commands.snac, "Use **pls snac** for a r/animemes"],
         [pls, self.commands.hope, "Use **pls hope** for a r/hopeposting"],
-				[pls, self.commands.nuke, "Use **pls nuke** for a r/nukedmemes"],
-        [pls, self.commands.mix, "[TODO] Use **pls mix** for a mix of memes"],
         [pls, self.commands.debug, "Use **pls debug** to show debug info"],
         [self.commands.bot, self.commands.help, "Use **bot help** to display parent message"],
       ],
@@ -63,7 +61,7 @@ class SimpleCommandHelper():
     }
   
   def is_simple_command(self, prefix, cmd, message_content):
-      return cmd.name == message_content.replace(prefix.name, self.EMPTY_STR).strip()
+      return message_content.startswith(prefix.name) and cmd.name == message_content.replace(prefix.name, self.EMPTY_STR).strip()
 
   def get_help(self, group):
     message = ""
@@ -77,7 +75,7 @@ class DiscordClient(discord.Client):
     # big-brain-coding channel id
     CHANNEL_ID = 1003624397749354506
     HELP_MSG_STRING = """
-*BigBrainBot* is a General Purpose Useless Toy (discord bot) made to replace warwolf.
+*BigBrainBot* is a General Purpose discord bot made to replace warwolf.
 Automatically drops daily coding problems on a predefined channel.
 
 [Major code changes in progress]
@@ -191,8 +189,7 @@ Automatically drops daily coding problems on a predefined channel.
           commands.dank: RedditUtil.DANK_STR,
           commands.snac: RedditUtil.SNAC_STR,
           commands.comic: RedditUtil.COMICS_STR,
-          commands.hope: RedditUtil.HOPE_STR,
-					commands.nuke: RedditUtil.NUKE_STR
+          commands.hope: RedditUtil.HOPE_STR
         }
 
         for type in reddit_meta.keys():
