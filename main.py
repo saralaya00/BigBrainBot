@@ -177,11 +177,11 @@ Automatically drops daily coding problems on a predefined channel.
               await self.send_messages([cmd.get_help(prefix)], message, 60)
               return
             
-        if cmd.is_simple_command(commands.bot, commands.good, message_content):
+        if cmd.is_simple_command(commands.good, commands.bot, message_content):
             await self.send_messages([":D"], message)
             return
 
-        if cmd.is_simple_command(commands.bot, commands.bad, message_content):
+        if cmd.is_simple_command(commands.bad, commands.bot, message_content):
           await self.send_messages([":("], message)
           return
 

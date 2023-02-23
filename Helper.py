@@ -229,6 +229,7 @@ $targets"""
                 "msg": "Bad Implementation",
             }
 
+    #experimental testing required
     def get_valid_counting_number(self, message_content):
         numIndex = -1 # Let's consider this as invalid index since the counting bot only considers the start to n - x as valid number
         for i in range(0,len(message_content)):
@@ -289,4 +290,4 @@ $targets"""
 # # export_leetcodeMD_toJSON(source)
 
 
-print(Helper().get_valid_counting_number("999 Hello World!"))
+# print(Helper().get_valid_counting_number("999 Hello World!"))
